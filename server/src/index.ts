@@ -1,16 +1,28 @@
 import { createServer } from "node:http";
 import { createSchema, createYoga } from "graphql-yoga";
+import { OpenMeteoGeocodingProvider } from "./providers/open-meteo/OpenMeteoGeocodingProvider.js";
+
+const geocoding = new OpenMeteoGeocodingProvider();
 
 const schema = createSchema({
   typeDefs: `
+    type Location {
+      id: ID!
+      name: String!
+      country: String
+      region: String
+      latitude: Float!
+      longitude: Float!
+    }
+
     type Query {
-      hello(name: String): String!
+      searchLocations(name: String!): [Location!]!
     }
   `,
   resolvers: {
     Query: {
-      hello: (_parent, args: { name?: string }) =>
-        `Hello, ${args.name ?? "world"}!`,
+      searchLocations: (_parent, args: { name: string }) =>
+        geocoding.search(args.name),
     },
   },
 });
