@@ -25,12 +25,60 @@ Known limitation: a coastal town a few km inland may land in a land grid cell an
   Lisbon had `weather_code: 3` (overcast) on a day with 10.9 h of sunshine,
   and Chamonix showed the same pattern. `sunshine_duration` is a much better
   signal for "nice day outside".
+  One exception: the outdoor thunderstorm penalty (below) uses it, because
+  there "worst condition of the day" is exactly the question.
 
 - **Snow: `snowfall_sum` + temperature as main signal, `snow_depth` as secondary.**
   The two don't agree with each other: at 2,500 m in Chamonix, depth started
   rising on a day with 0 snowfall, and reached ~20 cm from ~7.7 cm of total
   snowfall. In the valley, depth hit 0.01 m on a rain day with no snowfall.
   So depth needs a minimum threshold to count as "there's snow", not `> 0`.
+
+### Outdoor sightseeing
+
+Weighted sum of four sub-scores (rain 40%, temperature 30%, wind 15%,
+sunshine 15%), plus hard gates for unsafe days. Exact curves and thresholds
+will be in `server/src/scoring/`. The full back-and-forth is in
+`ai-sessions/outdoor-scoring.txt`.
+
+- **Gates are for safety, curves are for comfort.** Every sub-score reaches 0
+  exactly where its gate starts, so there's no range where conditions get
+  worse but the score doesn't move.
+
+- **Feels-like max temperature.** Includes humidity and wind chill, and the
+  max is the daytime value. Side effect: a cold windy day is penalised twice.
+  Mild at these weights, accepted.
+
+- **Heat hurts faster than cold.** Cold falls slowly (a dry sunny 5 °C day is
+  fine with a coat, ~86). Heat falls about twice as fast up to 35 °C, then
+  tails off to the gate.
+
+- **Heat gate at 45 °C, calibrated on data.** My first try was 38 °C, but
+  Open-Meteo's archive for Jul–Aug 2026 showed it would zero 42 of 62 days in
+  Miami (median feels-like max 38.6 °C). That's a climate filter, not a
+  safety gate. 45 °C is above every Florida day this summer. It's my
+  calibration, not a standard.
+
+- **Wind thresholds from the NWS wind threat scale**
+  (https://www.weather.gov/mlb/seasonal_wind_threat). Gates at "High"
+  sustained wind (64 km/h) or "Extreme" gusts (93 km/h). The scale is about
+  danger, not comfort, so where comfort starts dropping is my call.
+
+- **Thunderstorm is a ×0.75 penalty, not a gate.** With daily data, a short
+  afternoon storm would zero the whole day. NWS 30/30 lightning guidance
+  means a short storm costs ~1–2 h of an ~8 h day; I took the upper end
+  because daily data can't say when it happens.
+
+- **Washout needs duration, not just amount.** Short heavy storms can drop a
+  lot of rain fast, so heavy rain only gates if it also lasts 4+ hours.
+  10+ hours of rain gates on its own (all-day drizzle).
+
+- **Dropped `precipitation_probability_max`.** Same problem as `weather_code`:
+  it's the worst hour of the day. Consequence: forecast uncertainty isn't
+  part of the score.
+
+- **Sunshine as a ratio of daylight, with a 0.3 floor.** Short winter days
+  aren't punished for being short, and overcast but dry is still fine.
 
 ## Technical decisions
 
@@ -74,3 +122,12 @@ Known limitation: a coastal town a few km inland may land in a land grid cell an
 - **Live ski data can't show a good ski day right now** (mid-October, northern
   hemisphere season hasn't started). Ski scoring is checked with fixed
   test data instead of the live API.
+
+- **Weighted geometric mean for outdoor.** With a weighted sum, a dry, sunny,
+  calm day can't go below ~70 however bad the temperature is (a −9 °C sunny
+  day scores 71). A geometric mean fixes that (−9 °C → 37), but it's a
+  structural change late in the process and makes the factors harder to
+  explain in the UI. The gates already cover the dangerous extremes.
+
+- **Daytime-only aggregation.** Daily values include the night, so night rain
+  counts against the day. Fix: hourly data aggregated over ~09:00–18:00.
