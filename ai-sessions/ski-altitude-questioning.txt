@@ -1,0 +1,283 @@
+# Claude Code session, exported raw. Topic: how Open-Meteo handles elevation for skiing.
+# Its 2nd answer concluded "only temperature changes" from a single dry hour; I pushed back with week-long data and it corrected itself.
+
+❯ I want you to help me figure some questions abot weather, I'm building an
+  that take a city or town and rank for each of these activities: Skiing,
+  Surfing, Outdoor sightseeing, Indoor sightseeing. I'm using Open-Meteo for
+  weather and I want to be sure about a few things, lets start with this one:
+
+  Skiing is usually in resorts, I do not collect specific latitude and
+  logitude,  I have only the city, so, how would open-meteo behave regarding
+  elevation? Maybe I could use a fixed elevation to send to open-meteo, but
+  will it know if theres terrain in the location?
+
+⏺ Short answer: Open-Meteo has no idea there's a ski resort near your city. It
+  forecasts for the coordinates you send, at the elevation you send or the one
+  it looks up. A fixed elevation only adjusts the temperature calculation. It
+  doesn't create mountains or snowpack.
+
+  How Open-Meteo handles elevation
+
+  - Default: It looks up the ground height at your lat/lon in a 90 m elevation
+    dataset. It then adjusts the model's temperature for the difference between
+    that height and the model grid cell's average height (statistical
+    downscaling). The elevation field in the response tells you which height it
+    used.
+  - &elevation=<metres>: Overrides that lookup. The docs describe it as a way to
+    "correctly match mountain peaks", so this is its intended use.
+  - &elevation=nan: Turns downscaling off. You get the raw grid-cell average.
+
+  What a fixed elevation actually changes
+
+  - Mostly temperature, and whatever depends on it (freezing level, whether
+    precipitation falls as rain or snow, apparent temperature).
+  - It does not change the terrain the weather model uses. Models run on grids
+    of roughly 2–25 km depending on the model, so mountains are smoothed out.
+    Precipitation, wind, cloud and especially snow_depth are grid-cell values.
+    snow_depth in particular is coarse and often far too low for alpine terrain.
+  - It isn't checked against reality. Send elevation=2000 for Lisbon and you'll
+    get a believable cold forecast for a mountain that doesn't exist. A fixed
+    elevation would make every city look skiable on cold days, which is the
+    opposite of what your ranking needs.
+
+  The city-centre problem
+
+  Geocoding gives you the town centre, which sits in the valley. Chamonix is
+  about 1,035 m, but its ski areas run from about 1,000 m to 3,800 m. So:
+  - The default elevation will understate how cold and snowy the slopes are.
+  - But the default at least gives the real local height, so coastal and lowland
+    cities correctly come out bad for skiing.
+
+  Options, from simplest to best
+
+  1. Use the default elevation and score from the data. Base the score on recent
+     snowfall_sum, snow_depth and temperature. It's honest and simple, but it
+     will underrate valley towns next to resorts.
+  2. Look for nearby mountains (my recommendation). Build a small grid of points
+     within about 20–30 km of the city (say 3×3 or 5×5) and send them all in
+     one call to Open-Meteo's Elevation API (/v1/elevation), which accepts many
+     coordinates at once. Take the highest point, or flag the city as "no
+     mountain terrain" if the gap from the city is small, say under 500 m. Then
+     request the forecast at that point. This doesn't use the fixed-elevation
+     parameter at all, so the elevation can't be invented. The forecast endpoint
+     also accepts many coordinates in one request, so it costs about one extra
+     call.
+  3. Use a list of resort locations, such as OpenStreetMap's
+     landuse=winter_sports areas or a ski-area dataset. It's the most accurate,
+     but it's a real data dependency and likely too much for this exercise.
+
+  For an exercise I'd do option 2, or option 1 with option 2 noted as the next
+  step. Whichever you pick, record the assumption in DECISIONS.md: Open-Meteo
+  only adjusts temperature for elevation, it doesn't know about terrain, so the
+  skiing score depends on the proxy point you choose.
+
+  Want me to check this against a real request, for example Chamonix's default
+  elevation versus elevation=2500 versus the highest point nearby?
+
+❯ Yes, write me the curls in the end so I can check myself and also
+
+  Ran 3 shell commands (ctrl+o to expand)
+
+⏺ I ran the requests against the live API, using Chamonix (45.9237, 6.8694) and
+  Lisbon (38.7167, -9.1333), hour 12:00 UTC today.
+
+  What came back
+
+  Chamonix, same coordinates, different elevation values:
+
+  ┌─────────────┬─────────────────┬───────┬──────────┬────────┬────────────┐
+  │ elevation   │ Elevation used  │ Temp  │ Snowfall │ Snow   │ Freezing   │
+  │    param    │                 │       │          │ depth  │   level    │
+  ├─────────────┼─────────────────┼───────┼──────────┼────────┼────────────┤
+  │ (default)   │ 1041 m (real    │ 19.7  │ 0        │ 0      │ 4230 m     │
+  │             │ town height)    │ °C    │          │        │            │
+  ├─────────────┼─────────────────┼───────┼──────────┼────────┼────────────┤
+  │ 2500        │ 2500 m          │ 12.3  │ 0        │ 0      │ 4180 m     │
+  │             │                 │ °C    │          │        │            │
+  ├─────────────┼─────────────────┼───────┼──────────┼────────┼────────────┤
+  │             │ 1261 m          │ 18.3  │          │        │            │
+  │ nan         │ (grid-cell      │ °C    │ 0        │ 0      │ 4230 m     │
+  │             │ average)        │       │          │        │            │
+  └─────────────┴─────────────────┴───────┴──────────┴────────┴────────────┘
+
+  Lisbon: the default used 48 m and gave 26.1 °C. With elevation=2000 it gave
+  10.9 °C.
+
+  What this confirms
+
+  - Only temperature really moves. It dropped about 0.5–0.8 °C per 100 m.
+    Snowfall and snow depth are model grid-cell values and didn't change. The
+    freezing level moved only 50 m, which looks like noise.
+  - nan shows the terrain smoothing. The model "sees" Chamonix at 1261 m, not
+    1041 m, and the real mountains around it are averaged away.
+  - A fixed elevation invents conditions. Lisbon at 2000 m comes out cooler than
+    Chamonix's own valley, with no mountain anywhere near it.
+  - Snow is zero everywhere, which is right for mid-October. Remember this when
+    testing: skiing will rank low for every city until roughly late November.
+
+  Nearby-mountain idea, tested
+
+  I sampled a 5×5 grid of points about 11 km apart (roughly ±20 km) around each
+  city with the Elevation API:
+
+  - Chamonix: the grid ranges from 608 m to 4516 m.
+  - Lisbon: the highest point is 331 m. That's a clear "no mountain terrain"
+    result.
+
+  The catch: the highest Chamonix point, 4516 m, is the Mont Blanc massif:
+  glacier, not piste. Taking the plain maximum would forecast for an unskiable
+  summit. Two fixes:
+  - cap the elevation at about 3000 m, or
+  - use a high percentile of the grid (for example the 75th, about 2450 m here)
+    instead of the maximum.
+
+  Curls to check yourself
+
+  # 1. Chamonix, default elevation (uses the 90 m elevation data → ~1041 m)
+  curl -s 'https://api.open-meteo.com/v1/forecast?latitude=45.9237&longitude=6.8
+  694&hourly=temperature_2m,snowfall,snow_depth,freezing_level_height&forecast_d
+  ays=1&timezone=UTC' | jq '{elevation, t12: .hourly.temperature_2m[12], snow12:
+  .hourly.snowfall[12], depth12: .hourly.snow_depth[12], fl12:
+  .hourly.freezing_level_height[12]}'
+
+  # 2. Chamonix, forced to 2500 m (only temperature should change much)
+  curl -s 'https://api.open-meteo.com/v1/forecast?latitude=45.9237&longitude=6.8
+  694&hourly=temperature_2m,snowfall,snow_depth,freezing_level_height&forecast_d
+  ays=1&timezone=UTC&elevation=2500' | jq '{elevation, t12:
+  .hourly.temperature_2m[12], snow12: .hourly.snowfall[12], depth12:
+  .hourly.snow_depth[12], fl12: .hourly.freezing_level_height[12]}'
+
+  # 3. Chamonix, downscaling off (shows the model's smoothed grid-cell height)
+  curl -s 'https://api.open-meteo.com/v1/forecast?latitude=45.9237&longitude=6.8
+  694&hourly=temperature_2m&forecast_days=1&timezone=UTC&elevation=nan' | jq
+  '{elevation, t12: .hourly.temperature_2m[12]}'
+
+  # 4. Lisbon, default vs a made-up 2000 m mountain
+  curl -s 'https://api.open-meteo.com/v1/forecast?latitude=38.7167&longitude=-9.
+  1333&hourly=temperature_2m&forecast_days=1&timezone=UTC' | jq '{elevation,
+  t12: .hourly.temperature_2m[12]}'
+  curl -s 'https://api.open-meteo.com/v1/forecast?latitude=38.7167&longitude=-9.
+  1333&hourly=temperature_2m&forecast_days=1&timezone=UTC&elevation=2000' | jq
+  '{elevation, t12: .hourly.temperature_2m[12]}'
+
+  # 5. Elevation API: 5x5 grid around Chamonix (the 7th value is the 4516 m Mont
+  Blanc point)
+  curl -s 'https://api.open-meteo.com/v1/elevation?latitude=45.7237,45.7237,45.7
+  237,45.7237,45.7237,45.8237,45.8237,45.8237,45.8237,45.8237,45.9237,45.9237,45
+  .9237,45.9237,45.9237,46.0237,46.0237,46.0237,46.0237,46.0237,46.1237,46.1237,
+  46.1237,46.1237,46.1237&longitude=6.5894,6.7294,6.8694,7.0094,7.1494,6.5894,6.
+  7294,6.8694,7.0094,7.1494,6.5894,6.7294,6.8694,7.0094,7.1494,6.5894,6.7294,6.8
+  694,7.0094,7.1494,6.5894,6.7294,6.8694,7.0094,7.1494' | jq '.elevation'
+
+  # 6. Elevation API: 5x5 grid around Lisbon (highest point 331 m)
+  curl -s 'https://api.open-meteo.com/v1/elevation?latitude=38.5167,38.5167,38.5
+  167,38.5167,38.5167,38.6167,38.6167,38.6167,38.6167,38.6167,38.7167,38.7167,38
+  .7167,38.7167,38.7167,38.8167,38.8167,38.8167,38.8167,38.8167,38.9167,38.9167,
+  38.9167,38.9167,38.9167&longitude=-9.3933,-9.2633,-9.1333,-9.0033,-8.8733,-9.3
+  933,-9.2633,-9.1333,-9.0033,-8.8733,-9.3933,-9.2633,-9.1333,-9.0033,-8.8733,-9
+  .3933,-9.2633,-9.1333,-9.0033,-8.8733,-9.3933,-9.2633,-9.1333,-9.0033,-8.8733'
+  | jq '.elevation | max'
+
+  Your message ends at "and also". What was the second thing you wanted?
+
+❯ Your test only looked at hour 12 today, when nothing was falling at either
+  elevation, so 0 vs 0 doesn’t show snowfall is unaffected. With daily data for
+  the whole week, Chamonix at 2500 m shows 5.81 cm snowfall on Oct 18 and ~20
+  cm snow depth, vs rain and 0 in the valley. That matches what you said
+  earlier about elevation changing rain vs snow. Can you reconcile?
+
+  Ran 3 shell commands (ctrl+o to expand)
+
+⏺ You're right, and my earlier claim was wrong. I concluded "only temperature
+  changes" from one dry hour, where 0 vs 0 proves nothing. Over the full week
+  the elevation parameter changes the rain/snow split, snow depth, and even
+  which grid cell is used. I re-ran it and got your numbers.
+
+  Chamonix, Oct 18, at different elevations
+
+  ┌─────────────┬─────────────┬──────────┬───────┬──────────┬─────────────┐
+  │             │ Grid cell   │          │       │  Total   │  Max snow   │
+  │  elevation  │  returned   │ Snowfall │ Rain  │  precip  │   depth     │
+  │             │             │          │       │          │   (week)    │
+  ├─────────────┼─────────────┼──────────┼───────┼──────────┼─────────────┤
+  │ default     │ 45.92       │ 0        │ 27.2  │ 27.4 mm  │ 0           │
+  │ (1041 m)    │             │          │ mm    │          │             │
+  ├─────────────┼─────────────┼──────────┼───────┼──────────┼─────────────┤
+  │ 1800        │ 45.94       │ 0        │ —     │ —        │ —           │
+  ├─────────────┼─────────────┼──────────┼───────┼──────────┼─────────────┤
+  │ 2500        │ 45.90       │ 5.81 cm  │ 15.8  │ 25.1 mm  │ 0.21 m      │
+  │             │             │          │ mm    │          │             │
+  ├─────────────┼─────────────┼──────────┼───────┼──────────┼─────────────┤
+  │ 2800        │ 45.90       │ 12.67 cm │ 5.1   │ 24.2 mm  │ 0.29 m      │
+  │             │             │          │ mm    │          │             │
+  ├─────────────┼─────────────┼──────────┼───────┼──────────┼─────────────┤
+  │ 3200        │ 45.90       │ 13.37 cm │ 4.1   │ 24.2 mm  │ 0.29 m      │
+  │             │             │          │ mm    │          │             │
+  ├─────────────┼─────────────┼──────────┼───────┼──────────┼─────────────┤
+  │ 4000        │ 45.92       │ 13.37 cm │ 4.1   │ 24.2 mm  │ 0.29 m      │
+  │             │             │          │ mm    │          │             │
+  └─────────────┴─────────────┴──────────┴───────┴──────────┴─────────────┘
+
+  The 2800–4000 m rows come from models=icon_seamless. That's the same model the
+  default "best match" picks for Chamonix: its 2500 m numbers are identical.
+
+  What's actually going on
+
+  1. The rain/snow split follows the adjusted temperature. In the same grid cell
+     (45.90), moving from 2500 m to 2800 m turns most of the rain into snow
+     (5.8 → 12.7 cm), and snow depth goes from 0.21 m to 0.29 m. This is the
+     rain-vs-snow effect I described in my first answer. I then contradicted it
+     in my second answer by saying snowfall and snow depth don't change.
+  2. The grid cell itself changes. The coordinates in the response move between
+     45.90, 45.92 and 45.94 depending on the elevation you ask for. It looks
+     like Open-Meteo picks a neighbouring cell whose height is closer to the one
+     requested. That's why 1800 m shows no snow at all while 2500 m does.
+  3. The total amount stays roughly the same. Precipitation stays at about 24–27
+     mm whatever the elevation. Elevation changes what form it falls in, not
+     how much falls. The effect also levels off: there's still 4.1 mm of rain at
+     4000 m with a mean of −8 °C. So it's a correction applied after the model
+     run, not a new physical simulation.
+  4. One thing I can't explain: elevation=nan reports 1261 m but gives 12.88 cm
+     of snow and a 3.6 °C maximum. Those are colder than a 1261 m point should
+     be. I wouldn't rely on nan.
+
+  What this means for your design
+
+  - A fixed elevation is worse than I said. It doesn't just make cities look
+    cold, it creates snowfall and snow depth wherever cold and precipitation
+    coincide. Lisbon at 2000 m could show snow during a winter storm.
+  - The proxy elevation you choose strongly affects the result. Moving from 2500
+    m to 2800 m roughly doubled snowfall here. Whatever you do (nearby-terrain
+    sampling, a cap, a percentile), it's a parameter that drives the score, so
+    record it in DECISIONS.md.
+  - The overall recommendation still holds. Sample the real terrain nearby, and
+    don't ask for an elevation the city doesn't have nearby.
+
+  Curls
+
+  # Week view: default vs 2500 m vs nan (daily snow/rain/precip + max snow
+  depth)
+  for e in "" "&elevation=2500" "&elevation=nan"; do
+    curl -s "https://api.open-meteo.com/v1/forecast?latitude=45.9237&longitude=6
+  .8694&daily=snowfall_sum,rain_sum,precipitation_sum,temperature_2m_max&hourly=
+  snow_depth&forecast_days=7&timezone=Europe/Paris$e" \
+    | jq -c '{elevation, cell: [.latitude,.longitude], snow:
+  .daily.snowfall_sum, rain: .daily.rain_sum, precip: .daily.precipitation_sum,
+  max_depth: ([.hourly.snow_depth[] // 0] | max)}'
+  done
+
+  # Elevation sweep: watch the grid cell move and the rain/snow split on Oct 18
+  (index 3)
+  for e in 1800 2500 2800 3200 4000; do
+    curl -s "https://api.open-meteo.com/v1/forecast?latitude=45.9237&longitude=6
+  .8694&daily=snowfall_sum,rain_sum,precipitation_sum,temperature_2m_mean&foreca
+  st_days=7&timezone=Europe/Paris&models=icon_seamless&elevation=$e" \
+    | jq -c --arg e "$e" '{req: $e, cell: .latitude, snow:
+  .daily.snowfall_sum[3], rain: .daily.rain_sum[3], precip:
+  .daily.precipitation_sum[3], tmean: .daily.temperature_2m_mean[3]}'
+  done
+
+  The forecast will change by the time you run these, so the exact numbers will
+  differ. The pattern should still be there as long as some precipitation is
+  forecast. You also still owe me the second half of your earlier message, the
+  part after "and also".
