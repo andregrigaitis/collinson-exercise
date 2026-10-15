@@ -1,0 +1,26 @@
+{
+  "name": "collinson-exercise",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [],
+  "author": "André Ribeiro",
+  "license": "ISC",
+  "dependencies": {
+    "graphql": "^17.0.2",
+    "graphql-yoga": "^5.24.5"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "tsx": "^4.23.15",
+    "typescript": "~6.0.2",
+    "vitest": "^5.0.5"
+  }
+}
