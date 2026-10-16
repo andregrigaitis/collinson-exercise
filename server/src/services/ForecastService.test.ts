@@ -1,13 +1,17 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type {
   ActivityScorer,
+  DailyMarine,
   DailyWeather,
   DayScore,
 } from "../domain/types.js";
+import { lisbonWeek } from "../scoring/surf/fixtures.js";
+import { SurfScorer } from "../scoring/surf/SurfScorer.js";
 import {
   ForecastService,
   ForecastUnavailableError,
   type ForecastProvider,
+  type MarineProvider,
 } from "./ForecastService.js";
 
 function weather(date: string): DailyWeather {
@@ -28,6 +32,10 @@ function fakeProvider(dates: string[]): ForecastProvider {
   return { daily: async () => dates.map(weather) };
 }
 
+function fakeMarine(days: DailyMarine[] = []): MarineProvider {
+  return { daily: async () => days };
+}
+
 type FakeScore = number | null | "gated";
 
 /** Scores each date from a fixed table, so tests only exercise the service. */
@@ -44,9 +52,11 @@ function fakeScorer(scores: Record<string, FakeScore>): ActivityScorer {
 }
 
 async function forecastFor(scores: Record<string, FakeScore>) {
-  const service = new ForecastService(fakeProvider(Object.keys(scores)), [
-    fakeScorer(scores),
-  ]);
+  const service = new ForecastService(
+    fakeProvider(Object.keys(scores)),
+    fakeMarine(),
+    [fakeScorer(scores)],
+  );
   const [result] = await service.activityForecast(0, 0);
   return result;
 }
@@ -114,6 +124,7 @@ describe("ForecastService", () => {
   it("returns one result per scorer, with days in date order", async () => {
     const service = new ForecastService(
       fakeProvider(["2026-10-18", "2026-10-16", "2026-10-17"]),
+      fakeMarine(),
       [fakeScorer({ "2026-10-16": 50, "2026-10-17": 60, "2026-10-18": 70 })],
     );
 
@@ -136,6 +147,7 @@ describe("ForecastService", () => {
     const cause = new Error("Open-Meteo forecast request failed: 502 Bad Gateway");
     const service = new ForecastService(
       { daily: async () => Promise.reject(cause) },
+      fakeMarine(),
       [fakeScorer({})],
     );
 
@@ -143,5 +155,74 @@ describe("ForecastService", () => {
 
     expect(error).toBeInstanceOf(ForecastUnavailableError);
     expect(error.cause).toBe(cause);
+  });
+
+  describe("marine data", () => {
+    const weatherWeek = lisbonWeek.map((d) => d.weather);
+    const marineWeek = lisbonWeek.map((d) => d.marine);
+    const weatherProvider: ForecastProvider = { daily: async () => weatherWeek };
+    const outdoor = fakeScorer(
+      Object.fromEntries(weatherWeek.map((d) => [d.date, 50])),
+    );
+
+    it("passes each scorer the marine day for the same date", async () => {
+      const service = new ForecastService(
+        weatherProvider,
+        fakeMarine([...marineWeek].reverse()),
+        [new SurfScorer()],
+      );
+
+      const [surf] = await service.activityForecast(38.72, -9.14);
+
+      expect(surf.applicable).toBe(true);
+      expect(surf.days.map((d) => d.score)).toEqual([
+        85.0, 85.9, 79.5, 81.0, 96.3, 90.8, 86.5,
+      ]);
+    });
+
+    it("marks surfing not applicable when there's no sea nearby", async () => {
+      const inland = marineWeek.map(({ date }) => ({
+        date,
+        swellWaveHeightMax: null,
+        swellWavePeriodMax: null,
+      }));
+      const service = new ForecastService(weatherProvider, fakeMarine(inland), [
+        new SurfScorer(),
+        outdoor,
+      ]);
+
+      const [surf, outdoorResult] = await service.activityForecast(40.42, -3.7);
+
+      expect(surf).toEqual({
+        activity: "SURFING",
+        applicable: false,
+        reason: "No sea nearby",
+        bestDate: null,
+        days: [],
+      });
+      expect(outdoorResult.applicable).toBe(true);
+      expect(outdoorResult.days).toHaveLength(7);
+    });
+
+    it("keeps the other activities working when only marine fails", async () => {
+      const error = vi.spyOn(console, "error").mockImplementation(() => {});
+      const service = new ForecastService(
+        weatherProvider,
+        { daily: async () => Promise.reject(new Error("marine 503")) },
+        [new SurfScorer(), outdoor],
+      );
+
+      const [surf, outdoorResult] = await service.activityForecast(38.72, -9.14);
+
+      expect(surf).toMatchObject({
+        applicable: false,
+        reason: "Sea forecast unavailable right now",
+        days: [],
+      });
+      expect(outdoorResult).toMatchObject({ applicable: true, reason: null });
+      expect(outdoorResult.days).toHaveLength(7);
+      expect(error).toHaveBeenCalled();
+      error.mockRestore();
+    });
   });
 });

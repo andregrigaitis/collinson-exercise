@@ -15,8 +15,18 @@ I didn't go with a fixed mountain altitude because Open-Meteo forecasts any elev
 Research and the back-and-forth with Claude (including a wrong conclusion I caught) are in `ai-sessions/ski-altitude-questioning.txt`.
 
 q4: How do we know if surfing applies to a place?
-a4: The Marine API doesn't error for inland places; it returns 200 with all values `null` (checked with Madrid). If all marine values are null, surfing is "not applicable" instead of scoring 0.
-Known limitation: a coastal town a few km inland may land in a land grid cell and come back null too.
+a4: The Marine API returns 200 with all values null for inland places (Madrid,
+Coimbra), so all-null means "not applicable: No sea nearby". It uses the
+nearest sea cell, so towns up to ~20 km inland (Leiria) still get a score.
+That's arguably useful (a short drive), but the score describes the nearest
+sea, not a specific break: Lisbon's cell sits at the mouth of the Tagus,
+more sheltered than the Atlantic beaches nearby. `cell_selection=sea` gave the
+same results as the default in every test; it's passed explicitly anyway.
+
+q5: Who is the surfer?
+a5: A beginner. The app is for someone deciding what to do in a city, not a
+surf forecast for experts. Ideal swell 0.6–1 m, too big at 2 m. Caveat: the API
+gives significant swell height at sea; wave faces at the beach are often bigger.
 
 ## Scoring decisions
 
@@ -123,6 +133,25 @@ Exact numbers are in `server/src/scoring/indoor/config.ts`.
 - **No thunderstorm penalty for indoor.** A storm already lowers the outdoor
   score, which raises indoor.
 
+### Surfing
+
+Height 45%, period 30%, wind 25%, with gates for flat (≤ 0.3 m), too big
+(≥ 2 m) and too windy (≥ 39 km/h). Exact curves are in
+`server/src/scoring/surf/config.ts`; the research is in
+`ai-sessions/surf-scoring.txt`.
+
+- **Swell height and period, not total wave height.** Swell is the surfable
+  part; total height mixes in wind chop. `swell_wave_peak_period_max` returned
+  values like 1.65 s for Lisbon, so it isn't used.
+- **Wind without direction counts as bad wind.** Coastline orientation isn't
+  available, so light offshore wind (actually the best case) scores lower than
+  calm. That's why wind has the lowest weight. Breakpoints follow the Beaufort
+  scale (force 2 at 11 km/h, force 3 at 19, force 6 at 39).
+- **Thunderstorm ×0.5, stronger than outdoor's ×0.75.** In the water you're
+  farther from shelter and it takes time to paddle in.
+- **Sources:** I checked surfing-waves.com for thresholds, but it has no numbers,
+  only how swell forms. All values are my own calls.
+
 ## Technical decisions
 
 - **Two independent npm packages (`server/`, `web/`), no monorepo tooling.**
@@ -175,6 +204,12 @@ Exact numbers are in `server/src/scoring/indoor/config.ts`.
   would break on the first wording change, so `assess()` returns the outdoor
   score plus the gate kind; `scoreDay()` is unchanged.
 
+- **Forecast and marine fetched in parallel, failures isolated.** If the forecast
+  fails, it's FORECAST_UNAVAILABLE as before. If only marine fails, surfing comes
+  back "Sea forecast unavailable right now" and the other activities still work.
+  Scorers that don't use marine data ignore it (`scoreDay` takes it as an
+  optional argument).
+
 ## Cut / not done (and why)
 
 - **Scoring skiing at resort altitude.** See q3. Next step would be sampling a
@@ -206,3 +241,8 @@ Exact numbers are in `server/src/scoring/indoor/config.ts`.
 - **Extreme rain in a short time isn't gated.** 88 mm in 3 h in Miami scores
   21.7 instead of being a washout, because the heavy-rain gate needs 4+ hours.
   Idea: gate on amount alone above ~50 mm.
+
+- **Wave energy.** Height and period are scored separately, but energy depends on
+  height² × period, so a small long-period swell (Lisbon 19 Oct: 0.5 m at 13.8 s)
+  scores lower than a surfer would rate it. A combined sub-score would be harder
+  to explain in the UI.

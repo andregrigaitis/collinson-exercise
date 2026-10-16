@@ -12,7 +12,7 @@ scored the way it did.
 | ------------------- | --------------------------------------------- |
 | Outdoor sightseeing | Done: server scoring, tests, and UI           |
 | Skiing              | Not started (approach decided, see DECISIONS) |
-| Surfing             | Not started (approach decided, see DECISIONS) |
+| Surfing             | Done: server scoring, tests, and UI           |
 | Indoor sightseeing  | Done: server scoring, tests, and UI           |
 
 Location search, the forecast view, and loading, no-results and
@@ -63,7 +63,7 @@ The main ones. The reasoning for each is in [DECISIONS.md](DECISIONS.md).
 
 - A search returns up to 3 matches and the user picks one (q2).
 - Skiing will be scored at the city's elevation, not at resort altitude, so valley towns near resorts will score low (q3). Not built yet.
-- Surfing will be "not applicable" when the Marine API returns all nulls, which is what it does inland (q4). Not built yet.
+- Surfing will be "not applicable" when the Marine API returns all nulls, which is what it does inland (q4).
 - Daily data covers the full day, including the night, so night rain counts against the day (Cut / not done).
 - Daily `weather_code` and `precipitation_probability_max` aren't used as scores, because they describe the worst hour of the day (Scoring decisions).
 - A day with missing forecast data is shown as "can't score", not as 0 (Outdoor sightseeing).

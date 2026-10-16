@@ -32,6 +32,19 @@ export interface DailyWeather {
   weatherCode: number | null;
 }
 
+/**
+ * One day of sea forecast from the Marine API, local to the location.
+ * All null for places with no sea nearby.
+ */
+export interface DailyMarine {
+  /** YYYY-MM-DD, location's local date. */
+  date: string;
+  /** m */
+  swellWaveHeightMax: number | null;
+  /** seconds */
+  swellWavePeriodMax: number | null;
+}
+
 export interface ScoreFactor {
   name: string;
   /** 0–1, unrounded */
@@ -62,19 +75,27 @@ export type Activity =
   | "OUTDOOR_SIGHTSEEING"
   | "INDOOR_SIGHTSEEING";
 
-/** Scores one activity, one day at a time. */
+/**
+ * Scores one activity, one day at a time. Scorers that don't use marine
+ * data can ignore the second argument and skip notApplicable.
+ */
 export interface ActivityScorer {
   readonly activity: Activity;
-  scoreDay(day: DailyWeather): DayScore;
+  scoreDay(day: DailyWeather, marine?: DailyMarine): DayScore;
+  /**
+   * Why the activity doesn't apply to this place this week, or null if it
+   * does. `marine` is null when the Marine API failed.
+   */
+  notApplicable?(marine: DailyMarine[] | null): string | null;
 }
 
 export interface ActivityForecast {
   activity: Activity;
   applicable: boolean;
-  /** Why the activity isn't applicable. Always null for now. */
+  /** Why the activity isn't applicable; null when it is. */
   reason: string | null;
   /** Date with the highest score, null if no day could be scored. */
   bestDate: string | null;
-  /** In date order. */
+  /** In date order. Empty when not applicable. */
   days: DayScore[];
 }

@@ -1,6 +1,7 @@
 import type {
   ActivityForecast,
   ActivityScorer,
+  DailyMarine,
   DailyWeather,
   DayScore,
 } from "../domain/types.js";
@@ -8,6 +9,11 @@ import type {
 export interface ForecastProvider {
   /** 7 days of forecast. */
   daily(latitude: number, longitude: number): Promise<DailyWeather[]>;
+}
+
+export interface MarineProvider {
+  /** 7 days of sea forecast. */
+  daily(latitude: number, longitude: number): Promise<DailyMarine[]>;
 }
 
 /** The forecast provider failed (network, timeout, bad status). */
@@ -20,7 +26,8 @@ export class ForecastUnavailableError extends Error {
 
 export class ForecastService {
   constructor(
-    private readonly provider: ForecastProvider,
+    private readonly forecastProvider: ForecastProvider,
+    private readonly marineProvider: MarineProvider,
     private readonly scorers: ActivityScorer[],
   ) {}
 
@@ -28,17 +35,43 @@ export class ForecastService {
     latitude: number,
     longitude: number,
   ): Promise<ActivityForecast[]> {
-    let days: DailyWeather[];
-    try {
-      days = await this.provider.daily(latitude, longitude);
-    } catch (cause) {
-      throw new ForecastUnavailableError({ cause });
+    const [weatherResult, marineResult] = await Promise.allSettled([
+      this.forecastProvider.daily(latitude, longitude),
+      this.marineProvider.daily(latitude, longitude),
+    ]);
+
+    if (weatherResult.status === "rejected") {
+      throw new ForecastUnavailableError({ cause: weatherResult.reason });
     }
 
-    const sorted = [...days].sort((a, b) => a.date.localeCompare(b.date));
+    // Marine only matters for some activities; the rest still work without it.
+    let marine: DailyMarine[] | null = null;
+    if (marineResult.status === "fulfilled") {
+      marine = marineResult.value;
+    } else {
+      console.error(marineResult.reason);
+    }
+
+    const days = [...weatherResult.value].sort((a, b) =>
+      a.date.localeCompare(b.date),
+    );
+    const marineByDate = new Map(marine?.map((day) => [day.date, day]));
 
     return this.scorers.map((scorer) => {
-      const scores = sorted.map((day) => scorer.scoreDay(day));
+      const reason = scorer.notApplicable?.(marine) ?? null;
+      if (reason) {
+        return {
+          activity: scorer.activity,
+          applicable: false,
+          reason,
+          bestDate: null,
+          days: [],
+        };
+      }
+
+      const scores = days.map((day) =>
+        scorer.scoreDay(day, marineByDate.get(day.date)),
+      );
       return {
         activity: scorer.activity,
         applicable: true,

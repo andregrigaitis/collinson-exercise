@@ -3,8 +3,10 @@ import { GraphQLError } from "graphql";
 import { createSchema, createYoga } from "graphql-yoga";
 import { OpenMeteoForecastProvider } from "./providers/open-meteo/OpenMeteoForecastProvider.js";
 import { OpenMeteoGeocodingProvider } from "./providers/open-meteo/OpenMeteoGeocodingProvider.js";
+import { OpenMeteoMarineProvider } from "./providers/open-meteo/OpenMeteoMarineProvider.js";
 import { IndoorScorer } from "./scoring/indoor/IndoorScorer.js";
 import { OutdoorScorer } from "./scoring/outdoor/OutdoorScorer.js";
+import { SurfScorer } from "./scoring/surf/SurfScorer.js";
 import {
   ForecastService,
   ForecastUnavailableError,
@@ -12,8 +14,10 @@ import {
 
 const geocoding = new OpenMeteoGeocodingProvider();
 const forecast = new OpenMeteoForecastProvider();
+const marine = new OpenMeteoMarineProvider();
 const outdoorScorer = new OutdoorScorer();
-const forecastService = new ForecastService(forecast, [
+const forecastService = new ForecastService(forecast, marine, [
+  new SurfScorer(),
   outdoorScorer,
   new IndoorScorer(outdoorScorer),
 ]);
