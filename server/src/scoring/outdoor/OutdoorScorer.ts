@@ -1,4 +1,9 @@
-import type { DailyWeather, DayScore, ScoreFactor } from "../../domain/types.js";
+import type {
+  ActivityScorer,
+  DailyWeather,
+  DayScore,
+  ScoreFactor,
+} from "../../domain/types.js";
 import { outdoorConfig, type OutdoorConfig } from "./config.js";
 import { piecewise } from "../piecewise.js";
 
@@ -17,7 +22,8 @@ type CompleteDay = {
   [K in keyof DailyWeather]: NonNullable<DailyWeather[K]>;
 };
 
-export class OutdoorScorer {
+export class OutdoorScorer implements ActivityScorer {
+  readonly activity = "OUTDOOR_SIGHTSEEING";
   private readonly config: OutdoorConfig = outdoorConfig;
 
   scoreDay(day: DailyWeather): DayScore {

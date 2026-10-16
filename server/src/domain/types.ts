@@ -55,3 +55,26 @@ export interface DayScore {
   /** Why the day can't be scored, e.g. "Missing forecast data: sunshine duration" */
   missingData?: string;
 }
+
+export type Activity =
+  | "SKIING"
+  | "SURFING"
+  | "OUTDOOR_SIGHTSEEING"
+  | "INDOOR_SIGHTSEEING";
+
+/** Scores one activity, one day at a time. */
+export interface ActivityScorer {
+  readonly activity: Activity;
+  scoreDay(day: DailyWeather): DayScore;
+}
+
+export interface ActivityForecast {
+  activity: Activity;
+  applicable: boolean;
+  /** Why the activity isn't applicable. Always null for now. */
+  reason: string | null;
+  /** Date with the highest score, null if no day could be scored. */
+  bestDate: string | null;
+  /** In date order. */
+  days: DayScore[];
+}

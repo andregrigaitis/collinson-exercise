@@ -38,7 +38,7 @@ Known limitation: a coastal town a few km inland may land in a land grid cell an
 
 Weighted sum of four sub-scores (rain 40%, temperature 30%, wind 15%,
 sunshine 15%), plus hard gates for unsafe days. Exact curves and thresholds
-are in in `server/src/scoring/`. The full back-and-forth is in
+are in `server/src/scoring/`. The full back-and-forth is in
 `ai-sessions/outdoor-scoring.txt`.
 
 - **Gates are for safety, curves are for comfort.** Every sub-score reaches 0
@@ -119,10 +119,15 @@ are in in `server/src/scoring/`. The full back-and-forth is in
 - **Provider classes map Open-Meteo responses to my own domain types.**
   OpenMeteoGeocodingProvider is the only place that knows the API's
   shape, for example admin1 maps to region, and missing results returns []. The goal is
-  to keep scoring and GraphQL independent of Open-Meteo. No interface yet;
-  I'll extract one when the weather provider exists and the shape is clearer.
+  to keep scoring and GraphQL independent of Open-Meteo. A `ForecastProvider`
+  interface was extracted once the ForecastService tests needed a fake.
 
 - **5s timeout on Open-Meteo calls**, so a slow upstream doesn't hang the request.
+
+- **Error handling.** Provider failures become a `FORECAST_UNAVAILABLE` error
+  with a safe "try again" message; the real cause is only logged on the
+  server. Bad coordinates return `BAD_USER_INPUT`. Any other error stays
+  masked by Yoga as "Unexpected error."
 
 ## Cut / not done (and why)
 
