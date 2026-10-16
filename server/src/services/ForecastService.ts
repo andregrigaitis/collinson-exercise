@@ -58,7 +58,7 @@ export class ForecastService {
     const marineByDate = new Map(marine?.map((day) => [day.date, day]));
 
     return this.scorers.map((scorer) => {
-      const reason = scorer.notApplicable?.(marine) ?? null;
+      const reason = scorer.notApplicable?.({ weather: days, marine }) ?? null;
       if (reason) {
         return {
           activity: scorer.activity,

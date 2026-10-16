@@ -25,6 +25,10 @@ function weather(date: string): DailyWeather {
     sunshineDuration: 36000,
     daylightDuration: 40000,
     weatherCode: 0,
+    snowfallSum: 0,
+    rainSum: 0,
+    temperatureMax: 20,
+    snowDepthMin: 0,
   };
 }
 

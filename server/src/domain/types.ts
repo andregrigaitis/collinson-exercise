@@ -30,6 +30,14 @@ export interface DailyWeather {
   daylightDuration: number | null;
   /** WMO code, worst condition of the day */
   weatherCode: number | null;
+  /** cm */
+  snowfallSum: number | null;
+  /** mm */
+  rainSum: number | null;
+  /** °C, air temperature at 2 m */
+  temperatureMax: number | null;
+  /** cm, lowest hourly snow depth of the local day */
+  snowDepthMin: number | null;
 }
 
 /**
@@ -75,6 +83,13 @@ export type Activity =
   | "OUTDOOR_SIGHTSEEING"
   | "INDOOR_SIGHTSEEING";
 
+/** The whole week, for deciding whether an activity applies at all. */
+export interface ForecastWeek {
+  weather: DailyWeather[];
+  /** null when the Marine API failed. */
+  marine: DailyMarine[] | null;
+}
+
 /**
  * Scores one activity, one day at a time. Scorers that don't use marine
  * data can ignore the second argument and skip notApplicable.
@@ -82,11 +97,8 @@ export type Activity =
 export interface ActivityScorer {
   readonly activity: Activity;
   scoreDay(day: DailyWeather, marine?: DailyMarine): DayScore;
-  /**
-   * Why the activity doesn't apply to this place this week, or null if it
-   * does. `marine` is null when the Marine API failed.
-   */
-  notApplicable?(marine: DailyMarine[] | null): string | null;
+  /** Why the activity doesn't apply to this place this week, or null if it does. */
+  notApplicable?(week: ForecastWeek): string | null;
 }
 
 export interface ActivityForecast {

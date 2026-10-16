@@ -6,6 +6,7 @@ import { OpenMeteoGeocodingProvider } from "./providers/open-meteo/OpenMeteoGeoc
 import { OpenMeteoMarineProvider } from "./providers/open-meteo/OpenMeteoMarineProvider.js";
 import { IndoorScorer } from "./scoring/indoor/IndoorScorer.js";
 import { OutdoorScorer } from "./scoring/outdoor/OutdoorScorer.js";
+import { SkiScorer } from "./scoring/ski/SkiScorer.js";
 import { SurfScorer } from "./scoring/surf/SurfScorer.js";
 import {
   ForecastService,
@@ -17,6 +18,7 @@ const forecast = new OpenMeteoForecastProvider();
 const marine = new OpenMeteoMarineProvider();
 const outdoorScorer = new OutdoorScorer();
 const forecastService = new ForecastService(forecast, marine, [
+  new SkiScorer(),
   new SurfScorer(),
   outdoorScorer,
   new IndoorScorer(outdoorScorer),
@@ -58,6 +60,10 @@ const schema = createSchema({
       sunshineDuration: Float
       daylightDuration: Float
       weatherCode: Int
+      snowfallSum: Float
+      rainSum: Float
+      temperatureMax: Float
+      snowDepthMin: Float
     }
 
     enum Activity {

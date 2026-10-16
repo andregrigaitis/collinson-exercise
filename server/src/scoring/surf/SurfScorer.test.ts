@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { DailyMarine } from "../../domain/types.js";
 import {
   barcelonaFlat,
   cocoaBeachStorm,
@@ -10,6 +11,10 @@ import {
 import { SurfScorer } from "./SurfScorer.js";
 
 const scorer = new SurfScorer();
+const weekOf = (marine: DailyMarine[] | null) => ({
+  weather: lisbonWeek.map((d) => d.weather),
+  marine,
+});
 const score = ({ weather, marine }: SurfDay) => scorer.scoreDay(weather, marine);
 
 describe("SurfScorer", () => {
@@ -86,7 +91,7 @@ describe("SurfScorer", () => {
 
   describe("notApplicable", () => {
     it("is applicable when there's sea data", () => {
-      expect(scorer.notApplicable(lisbonWeek.map((d) => d.marine))).toBeNull();
+      expect(scorer.notApplicable(weekOf(lisbonWeek.map((d) => d.marine)))).toBeNull();
     });
 
     it("says no sea nearby when every marine value is null", () => {
@@ -96,11 +101,11 @@ describe("SurfScorer", () => {
         swellWavePeriodMax: null,
       }));
 
-      expect(scorer.notApplicable(inland)).toBe("No sea nearby");
+      expect(scorer.notApplicable(weekOf(inland))).toBe("No sea nearby");
     });
 
     it("says the sea forecast is unavailable when the Marine API failed", () => {
-      expect(scorer.notApplicable(null)).toBe(
+      expect(scorer.notApplicable(weekOf(null))).toBe(
         "Sea forecast unavailable right now",
       );
     });

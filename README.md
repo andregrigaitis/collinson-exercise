@@ -8,12 +8,12 @@ scored the way it did.
 
 ## Status
 
-| Activity            | Status                                        |
-| ------------------- | --------------------------------------------- |
-| Outdoor sightseeing | Done: server scoring, tests, and UI           |
-| Skiing              | Not started (approach decided, see DECISIONS) |
-| Surfing             | Done: server scoring, tests, and UI           |
-| Indoor sightseeing  | Done: server scoring, tests, and UI           |
+| Activity            | Status                              |
+| ------------------- | ----------------------------------- |
+| Outdoor sightseeing | Done: server scoring, tests, and UI |
+| Skiing              | Done: server scoring, tests, and UI |
+| Surfing             | Done: server scoring, tests, and UI |
+| Indoor sightseeing  | Done: server scoring, tests, and UI |
 
 Location search, the forecast view, and loading, no-results and
 service-unavailable states work in the UI.
@@ -62,7 +62,7 @@ Only the server has tests. The web app has none.
 The main ones. The reasoning for each is in [DECISIONS.md](DECISIONS.md).
 
 - A search returns up to 3 matches and the user picks one (q2).
-- Skiing will be scored at the city's elevation, not at resort altitude, so valley towns near resorts will score low (q3). Not built yet.
+- Skiing is scored at the city’s elevation, not at resort altitude, so valley towns near resorts score low (q3).
 - Surfing is "not applicable" when the Marine API returns all nulls (inland), or when the Marine API is down (q4).
 - Surfing is scored for a beginner: ideal swell 0.6–1 m, too big at 2 m (q5).
 - Daily data covers the full day, including the night, so night rain counts against the day (Cut / not done).
@@ -73,7 +73,7 @@ The main ones. The reasoning for each is in [DECISIONS.md](DECISIONS.md).
 ## How I worked
 
 - [DECISIONS.md](DECISIONS.md): open questions with the assumption I took, scoring and technical decisions, and what I cut and why.
-- [ai-sessions/](ai-sessions/): raw AI sessions (ski altitude, outdoor scoring, surf scoring, front-end coding), exported unedited except for a short summary at the top.
+- [ai-sessions/](ai-sessions/): raw AI sessions (ski altitude, outdoor scoring, surf scoring, front-end coding, ski scoring), exported unedited except for a short summary at the top.
 - The commit history.
 - I also used a separate chat for domain research and for sanity-checking numbers.
 
@@ -84,7 +84,7 @@ server/                 GraphQL API (Node.js, GraphQL Yoga, TypeScript run with 
   src/index.ts          Schema and resolvers
   src/providers/        Open-Meteo clients (geocoding, forecast, marine), mapped to our own domain types
   src/services/         ForecastService: fetch once, run each activity scorer
-  src/scoring/          One folder per activity (outdoor/, indoor/, surf/) with its scorer, config and tests
+  src/scoring/          One folder per activity (outdoor/, indoor/, surf/, ski/) with its scorer, config and tests
 web/                    React + TypeScript front end (Vite)
   src/api/              GraphQL requests (plain fetch, no client library)
   src/hooks/            Search and forecast state: loading, error, retry

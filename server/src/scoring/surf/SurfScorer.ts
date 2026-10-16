@@ -3,6 +3,7 @@ import type {
   DailyMarine,
   DailyWeather,
   DayScore,
+  ForecastWeek,
   ScoreFactor,
 } from "../../domain/types.js";
 import { piecewise } from "../piecewise.js";
@@ -19,7 +20,7 @@ export class SurfScorer implements ActivityScorer {
   readonly activity = "SURFING";
   private readonly config: SurfConfig = surfConfig;
 
-  notApplicable(marine: DailyMarine[] | null): string | null {
+  notApplicable({ marine }: ForecastWeek): string | null {
     if (marine === null) return "Sea forecast unavailable right now";
     const noSea = marine.every(
       (day) => day.swellWaveHeightMax === null && day.swellWavePeriodMax === null,

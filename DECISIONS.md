@@ -152,6 +152,35 @@ Height 45%, period 30%, wind 25%, with gates for flat (≤ 0.3 m), too big
 - **Sources:** I checked surfing-waves.com for thresholds, but it has no numbers,
   only how swell forms. All values are my own calls.
 
+### Skiing
+
+Fresh snow 30%, temperature 25%, base 15%, wind 15%, rain 15%, with gates for
+thin base (≤ 10 cm), extreme cold (≤ −25 °C max) and lift-closing wind
+(gusts ≥ 70 km/h), and a ×0.75 thunderstorm penalty. Scored at city elevation
+(q3). Exact curves are in `server/src/scoring/ski/config.ts`; the research is in
+`ai-sessions/ski-scoring.txt`.
+
+- **Base is the daily minimum snow depth.** Hourly depth is noisy (Zermatt
+  dropped 42 → 28 cm on a −5.8 °C day with no rain), and the minimum means
+  "covered all day". A snowy day's own snowfall is scored by fresh snow, so it
+  isn't counted twice.
+- **Air temperature, not feels-like.** What matters is dry snow vs slush.
+- **Rain is its own factor.** Chamonix on 8 Jan had 17.7 mm of rain at 3.5 °C;
+  temperature alone wouldn't mark that as a bad day.
+- **Wind gate at 70 km/h gusts.** Sources disagree: around 64 km/h from a lift
+  manager, 70–80 km/h at exposed top stations, and "every lift is different".
+  I took the middle. Valley gusts understate the ridge: Chamonix never reached
+  the gate in January.
+- **Inclusive base gate.** Chamonix 8 Jan has exactly 10 cm of base and is gated.
+  With "< 10" it would score 39; I kept "≤ 10" to match the other gates.
+- **Not applicable when every day has a base ≤ 10 cm:** "No snow on the ground
+  this week". Uses the gate's threshold instead of "> 0", so a trace reading
+  doesn't make skiing applicable with seven zeros. An elevation rule would
+  break for low-lying ski towns (Niseko, 134 m, has 80 cm in January). Null
+  depth counts as missing data, not as no snow.
+- **Sources:** base depth and fresh snow thresholds are my own calls; no published
+  minimum found.
+
 ## Technical decisions
 
 - **Two independent npm packages (`server/`, `web/`), no monorepo tooling.**
@@ -208,7 +237,8 @@ Height 45%, period 30%, wind 25%, with gates for flat (≤ 0.3 m), too big
   fails, it's FORECAST_UNAVAILABLE as before. If only marine fails, surfing comes
   back "Sea forecast unavailable right now" and the other activities still work.
   Scorers that don't use marine data ignore it (`scoreDay` takes it as an
-  optional argument).
+  optional argument). `notApplicable` receives the whole week (weather and marine), since skiing
+  needs the week's snow depths.
 
 ## Cut / not done (and why)
 
@@ -246,3 +276,9 @@ Height 45%, period 30%, wind 25%, with gates for flat (≤ 0.3 m), too big
   height² × period, so a small long-period swell (Lisbon 19 Oct: 0.5 m at 13.8 s)
   scores lower than a surfer would rate it. A combined sub-score would be harder
   to explain in the UI.
+
+- **Off-season vs no mountains.** Lisbon and Chamonix both show "No snow on the
+  ground this week" in October. Telling them apart needs terrain data (q3).
+
+- **Visibility isn't scored for skiing.** Snowing days often have 0% sunshine,
+  and a sunshine factor would work against the fresh-snow factor.

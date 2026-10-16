@@ -16,6 +16,10 @@ export const lisbonClear: DailyWeather = {
   sunshineDuration: 39260.56,
   daylightDuration: 40376.02,
   weatherCode: 1,
+  snowfallSum: 0.0,
+  rainSum: 0.0,
+  temperatureMax: 29.2,
+  snowDepthMin: 0.0,
 };
 
 /** Miami 25.77, -80.19. Thunderstorm, little rain. */
@@ -29,6 +33,10 @@ export const miamiThunderstorm: DailyWeather = {
   sunshineDuration: 32710.45,
   daylightDuration: 49388.0,
   weatherCode: 95,
+  snowfallSum: 0.0,
+  rainSum: 7.2,
+  temperatureMax: 30.2,
+  snowDepthMin: 0.0,
 };
 
 /** Miami 25.77, -80.19. 88 mm in 3 h: heavy but short, so not a washout. */
@@ -42,6 +50,10 @@ export const miamiShortDownpour: DailyWeather = {
   sunshineDuration: 28982.12,
   daylightDuration: 49391.82,
   weatherCode: 95,
+  snowfallSum: 0.0,
+  rainSum: 88.2,
+  temperatureMax: 31.2,
+  snowDepthMin: 0.0,
 };
 
 /** Miami 25.77, -80.19. 68 mm over 7 h: heavy-rain washout. */
@@ -55,6 +67,10 @@ export const miamiHeavyRain: DailyWeather = {
   sunshineDuration: 26660.94,
   daylightDuration: 49163.25,
   weatherCode: 80,
+  snowfallSum: 0.0,
+  rainSum: 68.1,
+  temperatureMax: 31.4,
+  snowDepthMin: 0.0,
 };
 
 /** Bergen 60.39, 5.32. Only 5.9 mm, but over 12 h: all-day drizzle washout. */
@@ -68,6 +84,10 @@ export const bergenDrizzle: DailyWeather = {
   sunshineDuration: 0,
   daylightDuration: 39511.07,
   weatherCode: 61,
+  snowfallSum: 0.0,
+  rainSum: 5.9,
+  temperatureMax: 12.4,
+  snowDepthMin: 0.0,
 };
 
 /** Wellington -41.29, 174.78. Gusts over the gate, nothing else gated. */
@@ -81,6 +101,10 @@ export const wellingtonGusts: DailyWeather = {
   sunshineDuration: 19809.14,
   daylightDuration: 54059.99,
   weatherCode: 51,
+  snowfallSum: 0.0,
+  rainSum: 1.1,
+  temperatureMax: 14.9,
+  snowDepthMin: 0.0,
 };
 
 /** Galway 53.27, -9.05. Storm Éowyn: gusts, sustained wind and washout all gate. */
@@ -94,6 +118,10 @@ export const galwayStormEowyn: DailyWeather = {
   sunshineDuration: 6984.46,
   daylightDuration: 30737.3,
   weatherCode: 63,
+  snowfallSum: 0.0,
+  rainSum: 10.2,
+  temperatureMax: 11.2,
+  snowDepthMin: null,
 };
 
 /** Kuwait City 29.38, 47.99. Above the 45 °C heat gate. */
@@ -107,6 +135,10 @@ export const kuwaitHeat: DailyWeather = {
   sunshineDuration: 44889.29,
   daylightDuration: 49943.96,
   weatherCode: 0,
+  snowfallSum: 0.0,
+  rainSum: 0.0,
+  temperatureMax: 47.4,
+  snowDepthMin: 0.0,
 };
 
 /** Yakutsk 62.03, 129.73. Far below the −10 °C cold gate. */
@@ -120,6 +152,10 @@ export const yakutskCold: DailyWeather = {
   sunshineDuration: 18000.0,
   daylightDuration: 20934.22,
   weatherCode: 3,
+  snowfallSum: 0.0,
+  rainSum: 0.0,
+  temperatureMax: -41.6,
+  snowDepthMin: 19.0,
 };
 
 /** Tromsø 69.65, 18.96. Polar night: daylight_duration is 0. */
@@ -133,4 +169,8 @@ export const tromsoPolarNight: DailyWeather = {
   sunshineDuration: 0,
   daylightDuration: 0,
   weatherCode: 55,
+  snowfallSum: 0.0,
+  rainSum: 2.5,
+  temperatureMax: 3.1,
+  snowDepthMin: 50.0,
 };

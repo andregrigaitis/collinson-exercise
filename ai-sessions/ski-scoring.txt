@@ -1,0 +1,311 @@
+
+# Claude session, exported raw. Topic: ski scoring.
+# Worth looking at: base depth as the daily minimum (hourly depth is noisy), the wind gate (three sources
+# that disagree, took the middle), and the applicability rule (gate threshold instead of "> 0"; Niseko shows
+# why an elevation rule would fail).
+
+❯ <ide_selection>The user selected the lines 6 to 7 from /Users/andre-grigaitis
+  /Projects/collinson-exercise/ai-sessions/front-end-coding-session.txt:
+  I'm building a small app for a take-home exercise: you enter a city and it
+    ranks the next 7 days for skiing, surfing, outdoor sightseeing and indoor
+
+  This may or may not be related to the current task.</ide_selection>
+
+❯ I'm building an app that ranks the next 7 days of a city for skiing, surfing,
+  outdoor sightseeing and indoor sightseeing, using Open-Meteo daily data.
+  Read DECISIONS.md first, especially q3, the "Snow" scoring decision and the
+  outdoor and surf sections, so skiing follows the same principles (sub-scores
+  0–1 from piecewise curves, weighted sum, gates for unfeasible days, each
+  single-variable curve reaching 0 where its gate starts). The earlier
+  elevation research is in ai-sessions/ski-altitude-questioning.txt.
+  What's already decided:
+  - Score at the city's elevation, not resort altitude (q3).
+  - snowfall_sum + temperature as the main signal, snow_depth as secondary with
+  a minimum threshold, because the two don't agree with each other.
+  - snow_depth only exists as hourly data, so it needs a daily aggregate.
+  - It's mid-October, so live data has no ski days in the northern hemisphere.
+  Tests will use real winter days from the Historical Forecast API.
+    Questions:
+  1. Which variables matter? Check the Open-Meteo Forecast API docs for exact
+  names, don't guess. For snow_depth, which daily aggregate makes sense (max,
+  min, value at a given hour)?
+  2. Curves and gates: minimum base depth to count as skiable, how much fresh
+  snow makes a good day, temperature (powder vs slush), and the wind level at
+  which lifts usually close. Say where each number comes from: a source you
+  checked or your own call.
+  3. Applicability: when should skiing be "not applicable" instead of a week of
+  zeros? My idea: no snow on the ground and none falling all week → "No snow
+  this week". Does that work for both Lisbon and Chamonix in October? An
+  elevation rule would break for low-lying ski towns like Niseko. Any better
+  option?
+  4. Weights, and why.
+  5. Run 2–3 real winter days from the Historical Forecast API (e.g. Chamonix
+  and Zermatt in January 2026) through the formula and tell me if the results
+  make sense. Give me the curls.
+
+  Keep it simple.
+
+⏺ I'll start by reading DECISIONS.md and the earlier elevation research.
+
+  Read 1 file, listed 1 directory (ctrl+o to expand)
+
+⏺ Now the existing scoring code, so the proposal matches its structure.
+
+  Searched for 1 pattern, ran 1 shell command (ctrl+o to expand)
+
+⏺ Now checking variable names against the Open-Meteo docs.
+
+⏺ Fetch(https://open-meteo.com/en/docs)
+  ⎿  Received 593.4KB (200 OK)
+
+⏺ Fetch(https://open-meteo.com/en/docs/historical-forecast-api)
+  ⎿  Received 537KB (200 OK)
+
+⏺ Variable names confirmed. Next, finding a source for lift wind-closure
+  thresholds.
+
+⏺ Web Search("ski lift chairlift wind closure threshold km/h gusts")
+  ⎿  Did 1 search in 5s
+
+⏺ Web Search("minimum snow depth needed to open ski slope cm base grooming")
+  ⎿  Did 1 search in 5s
+
+⏺ The base-depth number will have to be my own call. Now pulling real January
+  2026 data from the Historical Forecast API.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ The response came back empty, so I'm checking what the API returned.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ The shell is zsh, which doesn't split words, so I'm rewriting this as a bash
+  script.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ The cleanup rm was blocked. I'll skip it, since the stray empty files are in
+  the scratchpad and harmless, and just write new files.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+⏺ I have the January data. Next, checking the applicability rule against live
+  October data for Lisbon, Chamonix and Niseko, plus Lisbon and Niseko in
+  January.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ Both rules check out on real data. Now I'm running the draft formula over
+  every January day for both towns.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ I've worked out a ski formula and run it over every day of January 2026 for
+  Chamonix and Zermatt. The results look sensible, with two limitations that
+  come from scoring at the city's elevation (q3).
+
+  1. Variables
+
+  All names checked against the Open-Meteo Forecast API docs.
+
+  ┌──────────────┬────────────────────────────┬────────────┐
+  │     Use      │          Variable          │    Unit    │
+  ├──────────────┼────────────────────────────┼────────────┤
+  │ Fresh snow   │ snowfall_sum (daily)       │ cm         │
+  ├──────────────┼────────────────────────────┼────────────┤
+  │ Snow quality │ temperature_2m_max (daily) │ °C         │
+  ├──────────────┼────────────────────────────┼────────────┤
+  │ Rain on snow │ rain_sum (daily)           │ mm         │
+  ├──────────────┼────────────────────────────┼────────────┤
+  │ Lifts        │ wind_gusts_10m_max (daily) │ km/h       │
+  ├──────────────┼────────────────────────────┼────────────┤
+  │ Base depth   │ snow_depth (hourly only)   │ m (not cm) │
+  └──────────────┴────────────────────────────┴────────────┘
+
+  - Air temperature, not feels-like. What matters here is whether the snow is
+    dry or slushy, and that depends on air temperature.
+  - Rain is its own factor. Chamonix on 8 Jan had 17.7 mm of rain at a 3.5 °C
+    max. Temperature alone wouldn't mark that as a bad day.
+  - For snow_depth, use the daily minimum.
+    - The hourly series is noisy. Zermatt on 6 Jan dropped from 42 to 28 cm with
+      a −5.8 °C max and no rain, and Chamonix on 11 Jan swung from 29 to 44 cm.
+      The daily max picks up those spikes.
+    - The minimum means "covered all day". A snowy day's own snowfall is already
+      scored by snowfall_sum, so using the minimum avoids counting it twice.
+      The next day's minimum includes the new snow, so the day after a storm
+      gets the credit.
+    - I'd avoid "value at 09:00": the historical response reports
+      utc_offset_seconds: 7200 for Europe/Paris in January, which looks wrong
+      (it should be UTC+1), so a fixed hour could be off.
+    - One edge case: the season's first snowfall onto bare ground is still
+      blocked by the thin-base gate below on that day.
+
+  2. Curves and gates
+
+  Each gated curve reaches 0 exactly where its gate starts.
+
+  Factor: Base (min depth, cm)
+  Curve [x, score]: [10,0] [30,0.6] [60,1]
+  Gate: < 10 cm
+  Where the numbers come from: My call. I found no published minimum;
+  skiresort.info
+  (https://www.skiresort.info/snow-reports/alps/page/3/sorted/valley-snow-depths
+  /)
+   lists open resorts with 0–10 cm at the base. 10 cm also filters out the 0.01
+   m depth reading on a rain day.
+  ────────────────────────────────────────
+  Factor: Fresh snow (cm)
+  Curve [x, score]: [0,0.3] [5,0.7] [15,1]
+  Gate: none
+  Where the numbers come from: My call. 15 cm matches the common "6 inches =
+  powder day" rule of thumb, which I didn't verify. 0 cm still scores 0.3,
+  because groomed runs without new snow are fine.
+  ────────────────────────────────────────
+  Factor: Temp max (°C)
+  Curve [x, score]: [−25,0] [−15,0.6] [−8,1] [−2,1] [3,0.6] [8,0.2] [12,0]
+  Gate: ≤ −25
+  Where the numbers come from: My call. The warm side falls off for slush, with
+  no gate.
+  ────────────────────────────────────────
+  Factor: Gusts (km/h)
+  Curve [x, score]: [30,1] [50,0.5] [70,0]
+  Gate: ≥ 70
+  Where the numbers come from: Checked, but there's no standard. Weatherzone
+  (https://www.weatherzone.com.au/news/dont-expect-too-many-chairlifts-running-t
+  his-weekend/1373427)
+   says closures are likely around 70–80 km/h at exposed top stations; a
+  Bridger Bowl lift manager put it at about 64 km/h
+  (https://nbcmontana.com/news/local/gallery/high-winds-shut-down-bridger-bowl_2
+  0160509181537861?photo=1);
+   Perisher
+  (https://www.perisher.com.au/perisher-news/perisher-now/1640-wind-hold-blog)
+  says every lift is different. I took the middle of that range.
+  ────────────────────────────────────────
+  Factor: Rain (mm)
+  Curve [x, score]: [0,1] [2,0.6] [10,0]
+  Gate: none
+  Where the numbers come from: My call. People ski in rain, so it lowers the
+  score but doesn't make the day unfeasible.
+
+  3. Applicability
+
+  Not applicable when every one of the 7 days fails the base gate (min depth <
+  10 cm). Reason: "No snow on the ground this week".
+
+  This is your idea with the gate's threshold instead of "> 0", and it's the
+  better version. A week where every day is gated would be all zeros anyway, so
+  this rule replaces exactly that case. With "> 0", a trace reading or a 2 cm
+  dusting in Madrid would make skiing "applicable" and then score seven zeros.
+  Fresh snowfall doesn't need its own check, because snow falling on bare ground
+  is gated anyway.
+
+  Checked live (today) and against January 2026:
+
+  ┌──────────────────────────┬─────────────────┬───────────┬────────────┐
+  │                          │ Week's snowfall │ Max depth │   Result   │
+  ├──────────────────────────┼─────────────────┼───────────┼────────────┤
+  │ Lisbon, live Oct         │ 0               │ 0         │ N/A        │
+  ├──────────────────────────┼─────────────────┼───────────┼────────────┤
+  │ Chamonix, live Oct       │ 0               │ 0         │ N/A        │
+  ├──────────────────────────┼─────────────────┼───────────┼────────────┤
+  │ Niseko, live Oct         │ 0               │ 0         │ N/A        │
+  ├──────────────────────────┼─────────────────┼───────────┼────────────┤
+  │ Lisbon, Jan 8–14         │ 0               │ 0         │ N/A        │
+  ├──────────────────────────┼─────────────────┼───────────┼────────────┤
+  │ Niseko (134 m), Jan 8–14 │ 28.8 cm         │ 80 cm     │ applicable │
+  └──────────────────────────┴─────────────────┴───────────┴────────────┘
+
+  So it works for both Lisbon and Chamonix, and Niseko shows why an elevation
+  rule would fail. The catch is that Lisbon and Chamonix get the same message in
+  October: the rule can't tell "off-season" from "no mountains". That needs
+  terrain data, which is already the cut item under q3.
+
+  4. Weights
+
+  Fresh snow 30%, temperature 25%, base 15%, wind 15%, rain 15%.
+
+  - Fresh snow and temperature together are 55%, which keeps them as the main
+    signal as already decided.
+  - Base is 15% because depth is noisy and its real job is the gate.
+  - Wind is 15% because closures are handled by the gate. Also, valley gusts
+    understate the ridge: the highest gust in Chamonix all month was 51.5 km/h,
+    so the gate never fired.
+  - Rain is 15%, enough to sink a rainy day without zeroing it.
+
+  5. Real days (January 2026)
+
+  ┌───────────────┬────────────────────────────────────┬───────────────────┐
+  │      Day      │             Conditions             │       Score       │
+  ├───────────────┼────────────────────────────────────┼───────────────────┤
+  │ Chamonix 10   │ 10.4 cm fresh, −1.8 °C, 20 cm base │ 81, best of the   │
+  │ Jan           │                                    │ month             │
+  ├───────────────┼────────────────────────────────────┼───────────────────┤
+  │ Zermatt 11    │ clear day after the storm, −2.1    │ 77                │
+  │ Jan           │ °C, 54 cm base                     │                   │
+  ├───────────────┼────────────────────────────────────┼───────────────────┤
+  │ Zermatt 5 Jan │ no new snow, −5.9 °C, 42 cm base,  │ 75                │
+  │               │ calm                               │                   │
+  ├───────────────┼────────────────────────────────────┼───────────────────┤
+  │ Zermatt 13    │ 8.8 °C, soft snow                  │ 55                │
+  │ Jan           │                                    │                   │
+  ├───────────────┼────────────────────────────────────┼───────────────────┤
+  │ Chamonix 8    │ 17.7 mm rain, 3.5 °C               │ 39                │
+  │ Jan           │                                    │                   │
+  ├───────────────┼────────────────────────────────────┼───────────────────┤
+  │ Chamonix 1–7  │ valley base 3–9 cm                 │ 0 (thin-base      │
+  │ Jan           │                                    │ gate)             │
+  └───────────────┴────────────────────────────────────┴───────────────────┘
+
+  The ranking makes sense. Things to know:
+
+  - Chamonix early January is gated even though the slopes were open. That's the
+    q3 limitation showing up as expected, and worth a line in DECISIONS.md.
+  - A day with no new snow can't score above about 79, because 0 cm fresh still
+    costs 21 points. Zermatt's whole month sits at 55–77, so the spread mostly
+    comes from temperature. That's acceptable to me; lowering the fresh-snow
+    weight would widen the spread.
+  - Snowing days aren't penalised for poor visibility. Chamonix 10 Jan had 0%
+    sunshine and still scored highest. I left sunshine out on purpose, because
+    it works against the fresh-snow factor; that could go under "Cut".
+
+  Curls
+
+  # Chamonix (swap in 46.0207 / 7.7491 for Zermatt), January 2026, Historical
+  Forecast API
+  curl -s
+  'https://historical-forecast-api.open-meteo.com/v1/forecast?latitude=45.9237&l
+  ongitude=6.8694&start_date=2026-01-01&end_date=2026-01-31&daily=snowfall_sum,r
+  ain_sum,temperature_2m_max,wind_gusts_10m_max&hourly=snow_depth&timezone=auto'
+  \
+  | jq -r '. as $r | range(0; .daily.time|length) as $i | [$r.daily.time[$i],
+  $r.daily.snowfall_sum[$i], $r.daily.rain_sum[$i],
+  $r.daily.temperature_2m_max[$i], $r.daily.wind_gusts_10m_max[$i],
+  ([$r.hourly.snow_depth[$i*24:($i+1)*24][]|select(.!=null)]|min)] | @tsv'
+
+  # Applicability: live week (Lisbon / Chamonix / Niseko). Expect all-zero
+  depths in October.
+  for c in "38.7167,-9.1333" "45.9237,6.8694" "42.8048,140.6874"; do
+    curl -s "https://api.open-meteo.com/v1/forecast?latitude=${c%,*}&longitude=$
+  {c#*,}&daily=snowfall_sum&hourly=snow_depth&forecast_days=7&timezone=auto" \
+    | jq -c '{elevation, snow_week_cm: (.daily.snowfall_sum|add), max_depth_m:
+  ([.hourly.snow_depth[]|select(.!=null)]|max)}'
+  done
+
+  # Niseko in January: applicable despite 134 m elevation
+  curl -s 'https://historical-forecast-api.open-meteo.com/v1/forecast?latitude=4
+  2.8048&longitude=140.6874&start_date=2026-01-08&end_date=2026-01-14&daily=snow
+  fall_sum&hourly=snow_depth&timezone=auto' \
+  | jq -c '{elevation, snow_week_cm: (.daily.snowfall_sum|add), max_depth_m:
+  ([.hourly.snow_depth[]|select(.!=null)]|max)}'
+
+  The script that scored every January day is
+  /private/tmp/claude-501/-Users-andre-grigaitis-Projects-collinson-exercise/7ad
+  de6b6-a687-4677-be7f-717040334272/scratchpad/ski.py; run it with python3 -I.
+
+  The scratchpad also has two empty files from a command that went wrong
+  (chamonix 45.9237 6.8694.json and zermatt 46.0207 7.7491.json). A safety check
+  blocked my cleanup, so you can delete them yourself.
+
+  I haven't changed any project files. Next steps could be adding a "Skiing"
+  section to DECISIONS.md and a server/src/scoring/ski/ scorer in the same shape
+  as surf, with these January days as test fixtures.
