@@ -1,0 +1,1237 @@
+
+❯ <ide_opened_file>The user opened the file
+  /Users/andre-grigaitis/Projects/collinson-exercise/DECISIONS.md in the IDE.
+  This may or may not be related to the current task.</ide_opened_file>
+
+❯ I'm building a small app for a take-home exercise: you enter a city and it
+  ranks the next 7 days for skiing, surfing, outdoor sightseeing and indoor
+  sightseeing. Read readme.md and decisions.md first for context.
+
+  The backend is done for the first activity outdoor sightseeing. Look in the
+  index.ts for the sckema.
+
+  The front-end is in web/. First, lets remove the vite boilerplate
+
+  Listed 2 directories (ctrl+o to expand)
+
+⏺ Removing the demo assets, Vite favicon, and boilerplate CSS, leaving a minimal
+  App and a tiny base stylesheet.
+
+⏺ Bash(cd /Users/andre-grigaitis/Projects/collinson-exercise/web && git rm -q
+      src/assets/hero.png src/assets/vite.svg src/assets/react.svg src/App.css
+      public/icons.svg…)
+  ⎿  Updated web/index.html (+1 -2)
+       2  <html lang="en">
+       3    <head>
+       4      <meta charset="UTF-8" />
+       5 -    <link rel="icon" type="image/svg+xml" href="/favicon.svg" /
+         ->                                                              
+       5      <meta name="viewport" content="width=device-width, initial-
+          scale=1.0" />
+       7 -    <title>web</title>                                         
+       6 +    <title>Activity forecast</title>                           
+       7    </head>
+       8    <body>
+       9      <div id="root"></div>
+  ⎿  Deleted web/public/favicon.svg (+0 -1)
+      1 -<svg xmlns="http://www.w3.org/2000/svg" width="48" height="46" f
+        -ill="none" viewBox="0 0 48 46"><path fill="#863bff" d="M25.946 4
+        -4.938c-.664.845-2.021.375-2.021-.698V33.937a2.26 2.26 0 0 0-2.26
+        -2-2.262H10.287c-.92 0-1.456-1.04-.92-1.788l7.48-10.471c1.07-1.49
+        -7 0-3.578-1.842-3.578H1.237c-.92 0-1.456-1.04-.92-1.788L10.013.4
+        -74c.214-.297.556-.474.92-.474h28.894c.92 0 1.456 1.04.92 1.788l-
+        -7.48 10.471c-1.07 1.498 0 3.579 1.842 3.579h11.377c.943 0 1.473 
+        -1.088.89 1.83L25.947 44.94z" style="fill:#863bff;fill:color(disp
+        -lay-p3 .5252 .23 1);fill-opacity:1"/><mask id="a" width="48" hei
+        -ght="46" x="0" y="0" maskUnits="userSpaceOnUse" style="mask-type
+        -:alpha"><path fill="#000" d="M25.842 44.938c-.664.844-2.021.375-
+        -2.021-.698V33.937a2.26 2.26 0 0 0-2.262-2.262H10.183c-.92 0-1.45
+        -6-1.04-.92-1.788l7.48-10.471c1.07-1.498 0-3.579-1.842-3.579H1.13
+        -3c-.92 0-1.456-1.04-.92-1.787L9.91.473c.214-.297.556-.474.92-.47
+        -4h28.894c.92 0 1.456 1.04.92 1.788l-7.48 10.471c-1.07 1.498 0 3.
+        -578 1.842 3.578h11.377c.943 0 1.473 1.088.89 1.832L25.843 44.94z
+        -" style="fill:#000;fill-opacity:1"/></mask><g mask="url(#a)"><g 
+        -filter="url(#b)"><ellipse cx="5.508" cy="14.704" fill="#ede6ff" 
+        -rx="5.508" ry="14.704" style="fill:#ede6ff;fill:color(display-p3
+        - .9275 .9033 1);fill-opacity:1" transform="matrix(.00324 1 1 -.0
+        -0324 -4.47 31.516)"/></g><g filter="url(#c)"><ellipse cx="10.399
+        -" cy="29.851" fill="#ede6ff" rx="10.399" ry="29.851" style="fill
+        -:#ede6ff;fill:color(display-p3 .9275 .9033 1);fill-opacity:1" tr
+        -ansform="matrix(.00324 1 1 -.00324 -39.328 7.883)"/></g><g filte
+        -r="url(#d)"><ellipse cx="5.508" cy="30.487" fill="#7e14ff" rx="5
+        -.508" ry="30.487" style="fill:#7e14ff;fill:color(display-p3 .492
+        -2 .0767 1);fill-opacity:1" transform="rotate(89.814 -25.913 -14.
+        -639)scale(1 -1)"/></g><g filter="url(#e)"><ellipse cx="5.508" cy
+        -="30.599" fill="#7e14ff" rx="5.508" ry="30.599" style="fill:#7e1
+        -4ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transfo
+        -rm="rotate(89.814 -32.644 -3.334)scale(1 -1)"/></g><g filter="ur
+        -l(#f)"><ellipse  … [+7522 chars]                                
+  ⎿  Deleted web/public/icons.svg (+0 -24)
+       1 -<svg xmlns="http://www.w3.org/2000/svg">                       
+       2 -  <symbol id="bluesky-icon" viewBox="0 0 16 17">               
+       3 -    <g clip-path="url(#bluesky-clip)"><path fill="#08060d" d="M
+         -7.75 7.735c-.693-1.348-2.58-3.86-4.334-5.097-1.68-1.187-2.32-.9
+         -81-2.74-.79C.188 2.065.1 2.812.1 3.251s.241 3.602.398 4.13c.52 
+         -1.744 2.367 2.333 4.07 2.145-2.495.37-4.71 1.278-1.805 4.512 3.
+         -196 3.309 4.38-.71 4.987-2.746.608 2.036 1.307 5.91 4.93 2.746 
+         -2.72-2.746.747-4.143-1.747-4.512 1.702.189 3.55-.4 4.07-2.145.1
+         -56-.528.397-3.691.397-4.13s-.088-1.186-.575-1.406c-.42-.19-1.06
+         --.395-2.741.79-1.755 1.24-3.64 3.752-4.334 5.099"/></g>        
+       4 -    <defs><clipPath id="bluesky-clip"><path fill="#fff" d="M.1.
+         -85h15.3v15.3H.1z"/></clipPath></defs>                          
+       5 -  </symbol>                                                    
+       6 -  <symbol id="discord-icon" viewBox="0 0 20 19">               
+       7 -    <path fill="#08060d" d="M16.224 3.768a14.5 14.5 0 0 0-3.67-
+         -1.153c-.158.286-.343.67-.47.976a13.5 13.5 0 0 0-4.067 0c-.128-.
+         -306-.317-.69-.476-.976A14.4 14.4 0 0 0 3.868 3.77C1.546 7.28.91
+         -6 10.703 1.231 14.077a14.7 14.7 0 0 0 4.5 2.306q.545-.748.965-1
+         -.587a9.5 9.5 0 0 1-1.518-.74q.191-.14.372-.293c2.927 1.369 6.10
+         -7 1.369 8.999 0q.183.152.372.294-.723.437-1.52.74.418.838.963 1
+         -.588a14.6 14.6 0 0 0 4.504-2.308c.37-3.911-.63-7.302-2.644-10.3
+         -09m-9.13 8.234c-.878 0-1.599-.82-1.599-1.82 0-.998.705-1.82 1.6
+         --1.82.894 0 1.614.82 1.599 1.82.001 1-.705 1.82-1.6 1.82m5.91 0
+         -c-.878 0-1.599-.82-1.599-1.82 0-.998.705-1.82 1.6-1.82.893 0 1.
+         -614.82 1.599 1.82 0 1-.706 1.82-1.6 1.82"/>                    
+       8 -  </symbol>                                                    
+       9 -  <symbol id="documentation-icon" viewBox="0 0 21 20">         
+      10 -    <path fill="none" stroke="#aa3bff" stroke-linecap="round" s
+         -troke-linejoin="round" stroke-width="1.35" d="m15.5 13.333 1.53
+         -3 1.322c.645.555.967.833.967 1.178s-.322.623-.967 1.179L15.5 18
+         -.333m-3.333-5-1.534 1.322c-.644.555-.966.833-.966 1.178s.322.62
+         -3.966 1.179l1.534 1.321"/>                                     
+      11 -    <path fill="none" stroke="#aa3bff" stroke-linecap="round" s
+         -troke-linejoin="round" stroke-width="1.35" d="M17.167 10.836v-4
+         -.32c0-1.41 0-2.117-.224-2.68-.359-.906-1.118-1.621-2.08-1.96-.5
+         -99-.21-1.349-.21-2.848-.21-2.623 0-3.935 0-4.983.369-1.684.591-
+         -3.013 1.842-3.641 3.428C3 6.449 3 7.684 3 10.154v2.122c0 2.558 
+         -0 3.838.706 4.726q.306.383.713.671c.76.536 1.79.64 3.581.66"/> 
+      12 -    <path fill="none" stroke="#aa3bff" stroke-linecap="round" s
+         -troke-linejoin="round" stroke-width="1.35" d="M3 10a2.78 2.78 0
+         - 0 1 2.778-2.778c.555 0 1.209.097 1.748-.047.48-.129.854-.503.9
+         -82-.982.145-.54.048-1.194.048-1.749a2.78 2.78 0 0 1 2.777-2.777
+         -"/>                                                            
+      13 -  </symbol>                                                    
+      14 -  <symbol id="github-icon" viewBox="0 0 19 19">                
+      15 -    <path fill="#08060d" fill-rule="evenodd" d="M9.356 1.85C5.0
+         -5 1.85 1.57 5.356 1.57 9.694a7.84 7.84 0 0 0 5.324 7.44c.387.07
+         -9.528-.168.528-.376 0-.182-.013-.805-.013-1.454-2.165.467-2.616
+         --.935-2.616-.935-.349-.91-.864-1.143-.864-1.143-.71-.48.051-.48
+         -.051-.48.787.051 1.2.805 1.2.805.695 1.194 1.817.857 2.268.649.
+         -064-.507.27-.857.49-1.052-1.728-.182-3.545-.857-3.545-3.87 0-.8
+         -57.31-1.558.8-2.104-.078-.195-.349-1 .077-2.078 0 0 .657-.208 2
+         -.14.805a7.5 7.5 0 0 1 1.946-.26c.657 0 1.328.092 1.946.26 1.483
+         --1.013 2.14-.805 2.14-.805.426 1.078.155 1.883.078 2.078.502.54
+         -6.799 1.247.799 2.104 0 3.013-1.818 3.675-3.558 3.87.284.247.52
+         -8.714.528 1.454 0 1.052-.012 1.896-.012 2.156 0 .208.142.455.52
+         -8.377a7.84 7.84 0 0 0 5.324-7.441c.013-4.338-3.48-7.844-7.773-7
+         -.844" clip-rule="evenodd"/>                                    
+      16 -  </symbol>                                                    
+      17 -  <symbol id="social-icon" viewBox="0 0 20 20">                
+      18 -    <path fill="none" stroke="#aa3bff" stroke-linecap="round" s
+         -troke-linejoin="round" stroke-width="1.35" d="M12.5 6.667a4.167
+         - 4.167 0 1 0-8.334 0 4.167 4.167 0 0 0 8.334 0"/>              
+      19 -    <path fill="none" stroke="#aa3bff" stroke-linecap="round" s
+         -troke-linejoin="round" stroke-width="1.35" d="M2.5 16.667a5.833
+         - 5.833 0 0 1 8.75-5.053m3.837.474.513 1.035c.07.144.257.282.414
+         -.309l.93.155c.596.1.736.536.307.965l-.723.73a.64.64 0 0 0-.152.
+         -531l.207.903c.164.715-.213.991-.84.618l-.872-.52a.63.63 0 0 0-.
+         -577 0l-.872.52c-.624.373-1.003.094-.84-.618l.207-.903a.64.64 0 
+         -0 0-.152-.532l-.723-.729c-.426-.43-.289-.864.306-.964l.93-.156a
+         -.64.64 0 0 0 .412-.31l.513-1.034c.28-.562.735-.562 1.012 0"/>  
+      20 -  </symbol>                                                    
+      21 -  <symbol id="x-icon" viewBox="0 0 19 19">                     
+      22 -    <path fill="#08060d" fill-rule="evenodd" d="M1.893 1.98c.05
+         -2.072 1.245 1.769 2.653 3.77l2.892 4.114c.183.261.333.48.333.48
+         -6s-.068.089-.152.183l-.522.593-.765.867-3.597 4.087c-.375.426-.
+         -734.834-.798.905a1 1 0 0 0-.118.148c0 .01.236.017.664.017h.663l
+         -.729-.83c.4-.457.796-.906.879-.999a692 692 0 0 0 1.794-2.038c.0
+         -34-.037.301-.34.594-.675l.551-.624.345-.392a7 7 0 0 1 .34-.374c
+         -.006 0 .93 1.306 2.052 2.903l2.084 2.965.045.063h2.275c1.87 0 2
+         -.273-.003 2.266-.021-.008-.02-1.098-1.572-3.894-5.547-2.013-2.8
+         -62-2.28-3.246-2.273-3.266.008-.019.282-.332 2.085-2.38l2-2.274 
+         -1.567-1.782c.022-.028-.016-.03-.65-.03h-.674l-.3.342a871 871 0 
+         -0 1-1.782 2.025c-.067.075-.405.458-.75.852a100 100 0 0 1-.803.9
+         -1c-.148.172-.299.344-.99 1.127-.304.343-.32.358-.345.327-.015-.
+         -019-.904-1.282-1.976-2.808L6.365 1.85H1.8zm1.782.91 8.078 11.29
+         -4c.772 1.08 1.413 1.973 1.425 1.984.016.017.241.02 1.05.017l1.0
+         -3-.004-2.694-3.766L7.796 5.75 5.722 2.852l-1.039-.004-1.039-.00
+         -4z" clip-rule="evenodd"/>                                      
+      23 -  </symbol>                                                    
+      24 -</svg>                                                         
+  ⎿  Deleted web/src/App.css (+0 -184)
+        1 -.counter {                                                    
+        2 -  font-size: 16px;                                            
+        3 -  padding: 5px 10px;                                          
+        4 -  border-radius: 5px;                                         
+        5 -  color: var(--accent);                                       
+        6 -  background: var(--accent-bg);                               
+        7 -  border: 2px solid transparent;                              
+        8 -  transition: border-color 0.3s;                              
+        9 -  margin-bottom: 24px;                                        
+       10 -                                                              
+       11 -  &:hover {                                                   
+       12 -    border-color: var(--accent-border);                       
+       13 -  }                                                           
+       14 -  &:focus-visible {                                           
+       15 -    outline: 2px solid var(--accent);                         
+       16 -    outline-offset: 2px;                                      
+       17 -  }                                                           
+       18 -}                                                             
+       19 -                                                              
+       20 -.hero {                                                       
+       21 -  position: relative;                                         
+       22 -                                                              
+       23 -  .base,                                                      
+       24 -  .framework,                                                 
+       25 -  .vite {                                                     
+       26 -    inset-inline: 0;                                          
+       27 -    margin: 0 auto;                                           
+       28 -  }                                                           
+       29 -                                                              
+       30 -  .base {                                                     
+       31 -    width: 170px;                                             
+       32 -    position: relative;                                       
+       33 -    z-index: 0;                                               
+       34 -  }                                                           
+       35 -                                                              
+       36 -  .framework,                                                 
+       37 -  .vite {                                                     
+       38 -    position: absolute;                                       
+       39 -  }                                                           
+       40 -                                                              
+     … 144 more lines (ctrl+o to expand)
+  ⎿  Updated web/src/App.tsx (+3 -116)
+        1 -import { useState } from 'react'                              
+        2 -import heroImg from './assets/hero.png'                       
+        3 -import reactLogo from './assets/react.svg'                    
+        4 -import viteLogo from './assets/vite.svg'                      
+        5 -import './App.css'                                            
+        6 -                                                              
+        1  function App() {
+        8 -  const [count, setCount] = useState(0)                       
+        9 -                                                              
+        2    return (
+       11 -    <>                                                        
+       12 -      <section id="center">                                   
+       13 -        <div className="hero">                                
+       14 -          <img src={heroImg} className="base" width="170" heig
+          -ht="179" alt="" />                                            
+       15 -          <img src={reactLogo} className="framework" alt="Reac
+          -t logo" />                                                    
+       16 -          <img src={viteLogo} className="vite" alt="Vite logo"
+          - />                                                           
+       17 -        </div>                                                
+       18 -        <div>                                                 
+       19 -          <h1>Get started</h1>                                
+       20 -          <p>                                                 
+       21 -            Edit <code>src/App.tsx</code> and save to test <co
+          -de>HMR</code>                                                 
+       22 -          </p>                                                
+       23 -        </div>                                                
+       24 -        <button                                               
+       25 -          type="button"                                       
+       26 -          className="counter"                                 
+       27 -          onClick={() => setCount((count) => count + 1)}      
+       28 -        >                                                     
+       29 -          Count is {count}                                    
+       30 -        </button>                                             
+       31 -      </section>                                              
+       32 -                                                              
+       33 -      <div className="ticks"></div>                           
+       34 -                                                              
+       35 -      <section id="next-steps">                               
+       36 -        <div id="docs">                                       
+       37 -          <svg className="icon" role="presentation" aria-hidde
+          -n="true">                                                     
+       38 -            <use href="/icons.svg#documentation-icon"></use>  
+       39 -          </svg>                                              
+       40 -          <h2>Documentation</h2>                              
+     … 84 more lines (ctrl+o to expand)
+  ⎿  … 4 more files changed
+
+⏺ The build failed because this shell is on Node 21 and the project needs 24.
+  Retrying under Node 24:
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ I removed the Vite boilerplate from web/. Type-check, build and lint all pass
+  under Node 24.
+
+  - Deleted: the demo images (hero.png, react.svg, vite.svg), App.css,
+    public/icons.svg and the Vite logo favicon public/favicon.svg.
+  - App.tsx (web/src/App.tsx): now just a <main> with an "Activity forecast"
+    heading.
+  - index.css (web/src/index.css): cut down to a system font, light/dark color
+    scheme and body { margin: 0 }.
+  - index.html (web/index.html): the page title is now "Activity forecast"
+    instead of "web", and the favicon link is gone. Add an icon back later if
+    you want one.
+
+  The deletions are staged with git rm; the edits to existing files aren't.
+  Nothing is committed.
+
+  My shell was on Node 21 at first, and the build failed until I switched to 24
+  with nvm use 24. If your terminal isn't on 24, run nvm use in the repo root
+  first.
+
+  When you're ready for the next step, I'd build the city search
+  (searchLocations, letting the user pick from up to 3 matches) and then the
+  7-day activityForecast view for outdoor sightseeing. That view would show
+  score, factors, gate, penalty and missing data for each day.
+
+❯ <ide_opened_file>The user opened the file /Users/andre-grigaitis/Projects/col
+  linson-exercise/server/src/scoring/outdoor/config.ts in the IDE. This may or
+  may not be related to the current task.</ide_opened_file>
+
+❯ Lets do a search box. Don't allow submitting an empty or whitespace-only
+  name.
+
+  Read 1 file (ctrl+o to expand)
+
+⏺ Bash(mkdir -p src/components && cat > src/components/SearchBox.tsx <<'EOF'
+      import { useState, type FormEvent } from 'react'…)
+  ⎿  Updated web/src/App.tsx (+7 -0)
+       1 +import { useState } from 'react'                               
+       2 +import SearchBox from './components/SearchBox.tsx'             
+       3 +                                                               
+       4  function App() {
+       5 +  const [query, setQuery] = useState<string | null>(null)      
+       6 +                                                               
+       7    return (
+       8      <main>
+       9        <h1>Activity forecast</h1>
+      10 +      <SearchBox onSearch={setQuery} />                        
+      11 +      {query && <p>Searching for “{query}”…</p>}               
+      12      </main>
+      13    )
+      14  }
+  ⎿  Created web/src/components/SearchBox.tsx (+36 -0)
+       1 +import { useState, type FormEvent } from 'react'               
+       2 +                                                               
+       3 +type Props = {                                                 
+       4 +  onSearch: (name: string) => void                             
+       5 +}                                                              
+       6 +                                                               
+       7 +function SearchBox({ onSearch }: Props) {                      
+       8 +  const [value, setValue] = useState('')                       
+       9 +  const name = value.trim()                                    
+      10 +                                                               
+      11 +  function handleSubmit(event: FormEvent<HTMLFormElement>) {   
+      12 +    event.preventDefault()                                     
+      13 +    // The button is disabled too, but Enter in the input still
+         + submits.                                                      
+      14 +    if (name === '') return                                    
+      15 +    onSearch(name)                                             
+      16 +  }                                                            
+      17 +                                                               
+      18 +  return (                                                     
+      19 +    <form role="search" onSubmit={handleSubmit}>               
+      20 +      <label htmlFor="city">City</label>                       
+      21 +      <input                                                   
+      22 +        id="city"                                              
+      23 +        type="search"                                          
+      24 +        value={value}                                          
+      25 +        onChange={(event) => setValue(event.target.value)}     
+      26 +        placeholder="e.g. Lisbon"                              
+      27 +        autoComplete="off"                                     
+      28 +      />                                                       
+      29 +      <button type="submit" disabled={name === ''}>            
+      30 +        Search                                                 
+      31 +      </button>                                                
+      32 +    </form>                                                    
+      33 +  )                                                            
+      34 +}                                                              
+      35 +                                                               
+      36 +export default SearchBox                                       
+
+⏺ I added a search box in SearchBox.tsx (web/src/components/SearchBox.tsx).
+  Build and lint pass, but I haven't tried it in a browser.
+
+  - Empty input is blocked: the button is disabled while the input is empty or
+    only whitespace. Enter in the input still submits the form, so the submit
+    handler checks again and does nothing in that case.
+  - Trimming: it passes the name to onSearch already trimmed, so "  Lisbon "
+    becomes "Lisbon".
+  - Markup: it's a role="search" form with a labelled input.
+
+  App.tsx (web/src/App.tsx) shows a placeholder "Searching for “…”" line for
+  now; it doesn't call the API yet. The next step is to call searchLocations
+  with that name and show the up-to-3 matches for the user to pick from.
+
+❯ Call searchLocations and handle each state: searching, no results ("Couldn't
+  find that place"), a list of matches to pick from showing name, region and
+  country, and an error.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ Writing a small fetch-based GraphQL helper (no client library needed for two
+  queries), a search hook, and a results component.
+
+⏺ Bash(cd /Users/andre-grigaitis/Projects/collinson-exercise/web && mkdir -p
+      src/api src/hooks && cat > src/api/graphql.ts <<'EOF'
+      const API_URL = import.meta.env.VITE…)
+  ⎿  Updated web/src/App.tsx (+19 -2)
+       1  import { useState } from 'react'
+       2 +import type { Location } from './api/searchLocations.ts'       
+       3 +import LocationResults from './components/LocationResults.tsx' 
+       4  import SearchBox from './components/SearchBox.tsx'
+       5 +import { useLocationSearch } from './hooks/useLocationSearch.ts
+         +'                                                              
+       6  
+       7  function App() {
+       8    const [query, setQuery] = useState<string | null>(null)
+       9 +  const [selected, setSelected] = useState<Location | null>(nul
+         +l)                                                             
+      10 +  const search = useLocationSearch(query)                      
+      11 +                                                               
+      12 +  function handleSearch(name: string) {                        
+      13 +    setQuery(name)                                             
+      14 +    setSelected(null)                                          
+      15 +  }                                                            
+      16  
+      17    return (
+      18      <main>
+      19        <h1>Activity forecast</h1>
+      10 -      <SearchBox onSearch={setQuery} />                        
+      11 -      {query && <p>Searching for “{query}”…</p>}               
+      20 +      <SearchBox onSearch={handleSearch} />                    
+      21 +      {selected ? (                                            
+      22 +        <p>                                                    
+      23 +          Selected: {selected.name}                            
+      24 +          {selected.country && `, ${selected.country}`}        
+      25 +        </p>                                                   
+      26 +      ) : (                                                    
+      27 +        <LocationResults state={search} onPick={setSelected} />
+      28 +      )}                                                       
+      29      </main>
+      30    )
+      31  }
+  ⎿  Created web/src/api/graphql.ts (+24 -0)
+       1 +const API_URL = import.meta.env.VITE_API_URL ?? 'http://localho
+         +st:4000/graphql'                                               
+       2 +                                                               
+       3 +type GraphQLResponse<T> = {                                    
+       4 +  data?: T                                                     
+       5 +  errors?: { message: string }[]                               
+       6 +}                                                              
+       7 +                                                               
+       8 +export async function graphql<T>(                              
+       9 +  query: string,                                               
+      10 +  variables: Record<string, unknown>,                          
+      11 +  signal?: AbortSignal,                                        
+      12 +): Promise<T> {                                                
+      13 +  const response = await fetch(API_URL, {                      
+      14 +    method: 'POST',                                            
+      15 +    headers: { 'Content-Type': 'application/json' },           
+      16 +    body: JSON.stringify({ query, variables }),                
+      17 +    signal,                                                    
+      18 +  })                                                           
+      19 +  const body = (await response.json()) as GraphQLResponse<T>   
+      20 +  if (body.errors?.length || !body.data) {                     
+      21 +    throw new Error(body.errors?.[0]?.message ?? `Request faile
+         +d: ${response.status}`)                                        
+      22 +  }                                                            
+      23 +  return body.data                                             
+      24 +}                                                              
+  ⎿  Created web/src/api/searchLocations.ts (+35 -0)
+       1 +import { graphql } from './graphql.ts'                         
+       2 +                                                               
+       3 +export type Location = {                                       
+       4 +  id: string                                                   
+       5 +  name: string                                                 
+       6 +  country: string | null                                       
+       7 +  region: string | null                                        
+       8 +  latitude: number                                             
+       9 +  longitude: number                                            
+      10 +}                                                              
+      11 +                                                               
+      12 +const SEARCH_LOCATIONS = `                                     
+      13 +  query SearchLocations($name: String!) {                      
+      14 +    searchLocations(name: $name) {                             
+      15 +      id                                                       
+      16 +      name                                                     
+      17 +      country                                                  
+      18 +      region                                                   
+      19 +      latitude                                                 
+      20 +      longitude                                                
+      21 +    }                                                          
+      22 +  }                                                            
+      23 +`                                                              
+      24 +                                                               
+      25 +export async function searchLocations(                         
+      26 +  name: string,                                                
+      27 +  signal?: AbortSignal,                                        
+      28 +): Promise<Location[]> {                                       
+      29 +  const data = await graphql<{ searchLocations: Location[] }>( 
+      30 +    SEARCH_LOCATIONS,                                          
+      31 +    { name },                                                  
+      32 +    signal,                                                    
+      33 +  )                                                            
+      34 +  return data.searchLocations                                  
+      35 +}                                                              
+  ⎿  Created web/src/components/LocationResults.tsx (+36 -0)
+       1 +import type { Location } from '../api/searchLocations.ts'      
+       2 +import type { SearchState } from '../hooks/useLocationSearch.ts
+         +'                                                              
+       3 +                                                               
+       4 +type Props = {                                                 
+       5 +  state: SearchState                                           
+       6 +  onPick: (location: Location) => void                         
+       7 +}                                                              
+       8 +                                                               
+       9 +function LocationResults({ state, onPick }: Props) {           
+      10 +  switch (state.status) {                                      
+      11 +    case 'idle':                                               
+      12 +      return null                                              
+      13 +    case 'searching':                                          
+      14 +      return <p role="status">Searching…</p>                   
+      15 +    case 'error':                                              
+      16 +      return <p role="alert">Something went wrong searching. Pl
+         +ease try again.</p>                                            
+      17 +    case 'done':                                               
+      18 +      if (state.locations.length === 0) {                      
+      19 +        return <p role="status">Couldn't find that place</p>   
+      20 +      }                                                        
+      21 +      return (                                                 
+      22 +        <ul>                                                   
+      23 +          {state.locations.map((location) => (                 
+      24 +            <li key={location.id}>                             
+      25 +              <button type="button" onClick={() => onPick(locat
+         +ion)}>                                                         
+      26 +                <strong>{location.name}</strong>{' '}          
+      27 +                {[location.region, location.country].filter(Boo
+         +lean).join(', ')}                                              
+      28 +              </button>                                        
+      29 +            </li>                                              
+      30 +          ))}                                                  
+      31 +        </ul>                                                  
+      32 +      )                                                        
+      33 +  }                                                            
+      34 +}                                                              
+      35 +                                                               
+      36 +export default LocationResults                                 
+  ⎿  Created web/src/hooks/useLocationSearch.ts (+29 -0)
+       1 +import { useEffect, useState } from 'react'                    
+       2 +import { searchLocations, type Location } from '../api/searchLo
+         +cations.ts'                                                    
+       3 +                                                               
+       4 +export type SearchState =                                      
+       5 +  | { status: 'idle' }                                         
+       6 +  | { status: 'searching' }                                    
+       7 +  | { status: 'done'; locations: Location[] }                  
+       8 +  | { status: 'error' }                                        
+       9 +                                                               
+      10 +export function useLocationSearch(query: string | null): Search
+         +State {                                                        
+      11 +  const [state, setState] = useState<SearchState>({ status: 'id
+         +le' })                                                         
+      12 +                                                               
+      13 +  useEffect(() => {                                            
+      14 +    if (query === null) return                                 
+      15 +    // Abort the previous request so a slow older search can't 
+         +overwrite a newer one.                                         
+      16 +    const controller = new AbortController()                   
+      17 +    setState({ status: 'searching' })                          
+      18 +    searchLocations(query, controller.signal)                  
+      19 +      .then((locations) => setState({ status: 'done', locations
+         + }))                                                           
+      20 +      .catch((error: unknown) => {                             
+      21 +        if (controller.signal.aborted) return                  
+      22 +        console.error(error)                                   
+      23 +        setState({ status: 'error' })                          
+      24 +      })                                                       
+      25 +    return () => controller.abort()                            
+      26 +  }, [query])                                                  
+      27 +                                                               
+      28 +  return state                                                 
+      29 +}                                                              
+
+⏺ I'll fix the lint error by deriving "searching" from state instead of setting
+  it synchronously in the effect, and tag results with their request so
+  resubmitting the same name after an error correctly retries.
+
+⏺ Bash(cat > src/hooks/useLocationSearch.ts <<'EOF'
+      import { useEffect, useState } from 'react'…)
+  ⎿  Updated web/src/App.tsx (+4 -4)
+       2  import type { Location } from './api/searchLocations.ts'
+       3  import LocationResults from './components/LocationResults.tsx'
+       4  import SearchBox from './components/SearchBox.tsx'
+       5 -import { useLocationSearch } from './hooks/useLocationSearch.ts
+         -'                                                              
+       5 +import { useLocationSearch, type SearchRequest } from './hooks/
+         +useLocationSearch.ts'                                          
+       6  
+       7  function App() {
+       8 -  const [query, setQuery] = useState<string | null>(null)      
+       8 +  const [request, setRequest] = useState<SearchRequest | null>(
+         +null)                                                          
+       9    const [selected, setSelected] = useState<Location | null>(nul
+          l)
+      10 -  const search = useLocationSearch(query)                      
+      10 +  const search = useLocationSearch(request)                    
+      11  
+      12    function handleSearch(name: string) {
+      13 -    setQuery(name)                                             
+      13 +    setRequest({ name })                                       
+      14      setSelected(null)
+      15    }
+      16  
+  ⎿  Updated web/src/hooks/useLocationSearch.ts (+20 -9)
+       1  import { useEffect, useState } from 'react'
+       2  import { searchLocations, type Location } from '../api/searchLo
+          cations.ts'
+       3  
+       4 +// A new object per submit, so searching the same name again (e
+         +.g. after an error) re-runs.                                   
+       5 +export type SearchRequest = { name: string }                   
+       6 +                                                               
+       7  export type SearchState =
+       8    | { status: 'idle' }
+       9    | { status: 'searching' }
+      10    | { status: 'done'; locations: Location[] }
+      11    | { status: 'error' }
+      12  
+      10 -export function useLocationSearch(query: string | null): Search
+         -State {                                                        
+      11 -  const [state, setState] = useState<SearchState>({ status: 'id
+         -le' })                                                         
+      13 +type Result =                                                  
+      14 +  | { request: SearchRequest; status: 'done'; locations: Locati
+         +on[] }                                                         
+      15 +  | { request: SearchRequest; status: 'error' }                
+      16 +                                                               
+      17 +export function useLocationSearch(request: SearchRequest | null
+         +): SearchState {                                               
+      18 +  const [result, setResult] = useState<Result | null>(null)    
+      19  
+      20    useEffect(() => {
+      14 -    if (query === null) return                                 
+      21 +    if (request === null) return                               
+      22      // Abort the previous request so a slow older search can't 
+          overwrite a newer one.
+      23      const controller = new AbortController()
+      17 -    setState({ status: 'searching' })                          
+      18 -    searchLocations(query, controller.signal)                  
+      19 -      .then((locations) => setState({ status: 'done', locations
+         - }))                                                           
+      24 +    searchLocations(request.name, controller.signal)           
+      25 +      .then((locations) => setResult({ request, status: 'done',
+         + locations }))                                                 
+      26        .catch((error: unknown) => {
+      27          if (controller.signal.aborted) return
+      28          console.error(error)
+      23 -        setState({ status: 'error' })                          
+      29 +        setResult({ request, status: 'error' })                
+      30        })
+      31      return () => controller.abort()
+      26 -  }, [query])                                                  
+      32 +  }, [request])                                                
+     … 9 more lines (ctrl+o to expand)
+
+⏺ Now checking it against the real server, including CORS from the Vite origin:
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ The search now calls searchLocations and handles all four states. Build and
+  lint pass. I ran the query against the real server: "Paris" returns France,
+  Texas and Tennessee, and a nonsense name returns []. The server's CORS headers
+  allow the Vite dev origin. I haven't clicked through it in a browser yet.
+
+  What each state shows (LocationResults.tsx
+  (web/src/components/LocationResults.tsx)):
+  - Searching: "Searching…"
+  - No results: "Couldn't find that place"
+  - Matches: a list of buttons, each with the name in bold followed by region
+    and country (whichever are present, comma-separated). Picking one shows
+    "Selected: …" in place of the list, as a placeholder until the forecast view
+    exists.
+  - Error: "Something went wrong searching. Please try again." The real error
+    goes to the browser console only.
+
+  How it's built:
+  - API call: graphql.ts (web/src/api/graphql.ts) is a small fetch wrapper; I
+    didn't add a GraphQL client library for this. It treats both GraphQL errors
+    and network failures as errors. The URL defaults to
+    http://localhost:4000/graphql and can be overridden with VITE_API_URL.
+  - Search logic: useLocationSearch.ts (web/src/hooks/useLocationSearch.ts).
+    - A new search cancels the one still in flight, so a slow earlier response
+      can't overwrite a newer one.
+    - Every submit counts as a new search, even with the same name, so clicking
+      Search again after an error retries.
+    - I first set "searching" directly inside an effect, but the React hooks
+      lint rule rejects that. The hook now works it out from whether the stored
+      result belongs to the latest search.
+
+  Next would be calling activityForecast with the selected location's
+  coordinates and showing the 7 days.
+
+❯ <ide_opened_file>The user opened the file
+  /Users/andre-grigaitis/Projects/collinson-exercise/web/src/api/graphql.ts in
+  the IDE. This may or may not be related to the current
+  task.</ide_opened_file>
+
+❯ its ok for now, about cors, any worries?
+
+  Searched for 2 patterns, ran 4 shell commands (ctrl+o to expand)
+
+⏺ No real worries for this app as it stands. Yoga's default CORS is very open,
+  but there's nothing behind it that an open policy exposes.
+
+  What the default does: I read Yoga's CORS plugin (it lives in
+  @whatwg-node/server/esm/plugins/useCors.js). With no options set, it copies
+  whatever Origin the browser sends back as Access-Control-Allow-Origin, and it
+  also sends Access-Control-Allow-Credentials: true. So any website can call the
+  API from a visitor's browser, cookies included.
+
+  Why that's fine here:
+  - There's no login, cookies or per-user data, so another site sending your
+    cookies along gains nothing.
+  - There are no mutations. A request from another site can't change anything,
+    it can only read public weather data.
+
+  What CORS doesn't protect anyway: CORS only limits browsers. Anyone can call
+  the API with curl, and each call goes on to Open-Meteo, so the real exposure
+  is people using your server as a free proxy and burning your Open-Meteo quota.
+  The fix for that is rate limiting or caching, not CORS. That's out of scope
+  for the exercise, but it could be a line in DECISIONS.md.
+
+  If you want to tighten it:
+  - Restrict the origin: createYoga({ schema, cors: { origin:
+    'http://localhost:5173' } }) in index.ts (server/src/index.ts). In a real
+    deploy you'd read it from an env var. Leaving out credentials stops it
+    sending the credentials header.
+  - Use a Vite dev proxy instead (my pick): proxy /graphql to localhost:4000 in
+    vite.config.ts and change the default API_URL in graphql.ts
+    (web/src/api/graphql.ts) to /graphql. The browser then sees one origin, CORS
+    stops being involved, and the setup matches a typical deploy where both sit
+    behind the same host. You can still turn off Yoga's CORS on top of that.
+
+  Either change is a few lines if you want it now; otherwise it's a short note
+  in DECISIONS.md.
+
+❯ <ide_opened_file>The user opened the file /Users/andre-grigaitis/Projects/col
+  linson-exercise/web/src/hooks/useLocationSearch.ts in the IDE. This may or
+  may not be related to the current task.</ide_opened_file>
+
+❯ Ok, its working fine! Generate a commit message for me?
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+⏺ Here's a message in the same style as your recent commits. It covers
+  everything staged, including your CORS note in DECISIONS.md:
+
+  Add location search to the web app
+  - Remove the Vite boilerplate (demo assets, icons, favicon, App.css)
+  - SearchBox: submit is blocked for empty or whitespace-only names;
+    the name is trimmed before searching
+  - searchLocations via a small fetch-based GraphQL helper (no client
+    library); API URL overridable with VITE_API_URL
+  - useLocationSearch: searching / no results / matches / error states;
+    a new search aborts the one in flight, and re-submitting the same
+    name retries
+  - LocationResults: pick from up to 3 matches showing name, region
+    and country; "Couldn't find that place" when nothing matches
+  - DECISIONS.md: CORS left at Yoga's default, and why
+
+  If you'd rather keep the boilerplate removal as its own commit, unstage the
+  web/src/api, hooks and components folders and the App.tsx change, then commit
+  the deletions first with:
+
+  Remove Vite boilerplate from the web app
+❯ Ok, lets add a forecast view, when the user picks a place, call
+  activityForecast(latitude, longitude) and show the result.
+
+  The states can be: Loading. Error (if the error code is FORECAST_UNAVAILABLE,
+  show "The weather service is unavailable, try again" with a retry button.
+  Any other error, a generic message. graphql.ts currently drops
+  extensions.code, so it needs to pass it through.). Result (one section per
+  activity (only outdoor sightseeing exists for now). If an activity isn't
+  applicable, show its reason instead of days.)
+
+  For each activity highlight the best day (bestDate). If it's null, say
+  there's no good day this week. The 7 days in date order, each with the
+  weekday and date, and the score. A gated day shows its reason ("Unsafe:
+  dangerous wind: gusts 95 km/h") instead of just 0. A missing-data day shows
+  "No forecast data". A penalty shows next to the score. Factors hidden by
+  default, expandable per day (a native details is fine). For each factor show
+  its detail text and how many points it cost: weight x (1 − subScore) x 100,
+  rounded. Don't show raw subScores.
+
+  I also thought about the dates, if the api returns YYYY-MM-DD in local time
+  do not parse wit new date, it might show the wrong day in negative offset
+  timezones. And let the user go back and search another place. Tell me if you
+  make any choice i did not ask for.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ I'll extend the GraphQL helper to keep the error code, then add the forecast
+  hook, a date formatter and the view components.
+
+⏺ Bash(cd /Users/andre-grigaitis/Projects/collinson-exercise/web/src && cat >
+      api/graphql.ts <<'EOF'
+      const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:…)
+  ⎿  Updated web/src/App.tsx (+9 -11)
+      1  import { useState } from 'react'
+      2  import type { Location } from './api/searchLocations.ts'
+      3 +import ForecastView from './components/ForecastView.tsx'        
+      4  import LocationResults from './components/LocationResults.tsx'
+      5  import SearchBox from './components/SearchBox.tsx'
+      6  import { useLocationSearch, type SearchRequest } from './hooks/u
+         seLocationSearch.ts'
+     ...
+      10    const [selected, setSelected] = useState<Location | null>(nul
+          l)
+      11    const search = useLocationSearch(request)
+      12  
+      12 -  function handleSearch(name: string) {                        
+      13 -    setRequest({ name })                                       
+      14 -    setSelected(null)                                          
+      15 -  }                                                            
+      16 -                                                               
+      13    return (
+      14      <main>
+      15        <h1>Activity forecast</h1>
+      20 -      <SearchBox onSearch={handleSearch} />                    
+      16        {selected ? (
+      22 -        <p>                                                    
+      23 -          Selected: {selected.name}                            
+      24 -          {selected.country && `, ${selected.country}`}        
+      25 -        </p>                                                   
+      17 +        <ForecastView location={selected} onBack={() => setSele
+         +cted(null)} />                                                 
+      18        ) : (
+      27 -        <LocationResults state={search} onPick={setSelected} />
+      19 +        <>                                                     
+      20 +          <SearchBox                                           
+      21 +            initialValue={request?.name}                       
+      22 +            onSearch={(name) => setRequest({ name })}          
+      23 +          />                                                   
+      24 +          <LocationResults state={search} onPick={setSelected} 
+         +/>                                                             
+      25 +        </>                                                    
+      26        )}
+      27      </main>
+      28    )
+  ⎿  Created web/src/api/activityForecast.ts (+69 -0)
+       1 +import { graphql } from './graphql.ts'                         
+       2 +                                                               
+       3 +export type Activity =                                         
+       4 +  | 'SKIING'                                                   
+       5 +  | 'SURFING'                                                  
+       6 +  | 'OUTDOOR_SIGHTSEEING'                                      
+       7 +  | 'INDOOR_SIGHTSEEING'                                       
+       8 +                                                               
+       9 +export type ScoreFactor = {                                    
+      10 +  name: string                                                 
+      11 +  subScore: number                                             
+      12 +  weight: number                                               
+      13 +  detail: string                                               
+      14 +}                                                              
+      15 +                                                               
+      16 +export type DayScore = {                                       
+      17 +  /** YYYY-MM-DD, the location's local date. */                
+      18 +  date: string                                                 
+      19 +  score: number | null                                         
+      20 +  factors: ScoreFactor[]                                       
+      21 +  gate: string | null                                          
+      22 +  penalty: string | null                                       
+      23 +  missingData: string | null                                   
+      24 +}                                                              
+      25 +                                                               
+      26 +export type ActivityForecast = {                               
+      27 +  activity: Activity                                           
+      28 +  applicable: boolean                                          
+      29 +  reason: string | null                                        
+      30 +  bestDate: string | null                                      
+      31 +  days: DayScore[]                                             
+      32 +}                                                              
+      33 +                                                               
+      34 +const ACTIVITY_FORECAST = `                                    
+      35 +  query ActivityForecast($latitude: Float!, $longitude: Float!)
+         + {                                                             
+      36 +    activityForecast(latitude: $latitude, longitude: $longitude
+         +) {                                                            
+      37 +      activity                                                 
+      38 +      applicable                                               
+      39 +      reason                                                   
+      40 +      bestDate                                                 
+     … 29 more lines (ctrl+o to expand)
+  ⎿  Updated web/src/api/graphql.ts (+17 -2)
+       2  
+       3  type GraphQLResponse<T> = {
+       4    data?: T
+       5 -  errors?: { message: string }[]                               
+       5 +  errors?: { message: string; extensions?: { code?: string } }[
+         +]                                                              
+       6 +}                                                              
+       7 +                                                               
+       8 +/** A failed request. `code` is the GraphQL `extensions.code`, 
+         +if the server sent one. */                                     
+       9 +export class GraphQLRequestError extends Error {               
+      10 +  readonly code?: string                                       
+      11 +                                                               
+      12 +  constructor(message: string, code?: string) {                
+      13 +    super(message)                                             
+      14 +    this.name = 'GraphQLRequestError'                          
+      15 +    this.code = code                                           
+      16 +  }                                                            
+      17  }
+      18  
+      19  export async function graphql<T>(
+     ...
+      29    })
+      30    const body = (await response.json()) as GraphQLResponse<T>
+      31    if (body.errors?.length || !body.data) {
+      21 -    throw new Error(body.errors?.[0]?.message ?? `Request faile
+         -d: ${response.status}`)                                        
+      32 +    const error = body.errors?.[0]                             
+      33 +    throw new GraphQLRequestError(                             
+      34 +      error?.message ?? `Request failed: ${response.status}`,  
+      35 +      error?.extensions?.code,                                 
+      36 +    )                                                          
+      37    }
+      38    return body.data
+      39  }
+  ⎿  Created web/src/components/ActivitySection.tsx (+46 -0)
+       1 +import type { Activity, ActivityForecast } from '../api/activit
+         +yForecast.ts'                                                  
+       2 +import { formatDate } from '../format/date.ts'                 
+       3 +import DayRow from './DayRow.tsx'                              
+       4 +                                                               
+       5 +const ACTIVITY_NAMES: Record<Activity, string> = {             
+       6 +  SKIING: 'Skiing',                                            
+       7 +  SURFING: 'Surfing',                                          
+       8 +  OUTDOOR_SIGHTSEEING: 'Outdoor sightseeing',                  
+       9 +  INDOOR_SIGHTSEEING: 'Indoor sightseeing',                    
+      10 +}                                                              
+      11 +                                                               
+      12 +type Props = {                                                 
+      13 +  forecast: ActivityForecast                                   
+      14 +}                                                              
+      15 +                                                               
+      16 +function ActivitySection({ forecast }: Props) {                
+      17 +  const name = ACTIVITY_NAMES[forecast.activity]               
+      18 +                                                               
+      19 +  return (                                                     
+      20 +    <section className="activity" aria-labelledby={forecast.act
+         +ivity}>                                                        
+      21 +      <h2 id={forecast.activity}>{name}</h2>                   
+      22 +      {!forecast.applicable ? (                                
+      23 +        <p>{forecast.reason ?? 'Not available for this place.'}
+         +</p>                                                           
+      24 +      ) : (                                                    
+      25 +        <>                                                     
+      26 +          <p className="best-summary">                         
+      27 +            {forecast.bestDate                                 
+      28 +              ? `Best day: ${formatDate(forecast.bestDate)}`   
+      29 +              : 'No good day this week.'}                      
+      30 +          </p>                                                 
+      31 +          <ol className="days">                                
+      32 +            {forecast.days.map((day) => (                      
+      33 +              <DayRow                                          
+      34 +                key={day.date}                                 
+      35 +                day={day}                                      
+      36 +                isBest={day.date === forecast.bestDate}        
+      37 +              />                                               
+      38 +            ))}                                                
+      39 +          </ol>                                                
+      40 +        </>                                                    
+     … 6 more lines (ctrl+o to expand)
+  ⎿  Created web/src/components/DayRow.tsx (+59 -0)
+       1 +import type { DayScore } from '../api/activityForecast.ts'     
+       2 +import { formatDate } from '../format/date.ts'                 
+       3 +                                                               
+       4 +type Props = {                                                 
+       5 +  day: DayScore                                                
+       6 +  isBest: boolean                                              
+       7 +}                                                              
+       8 +                                                               
+       9 +/** Points lost to a factor: what it would add at full marks mi
+         +nus what it adds. */                                           
+      10 +function pointsLost(weight: number, subScore: number): number {
+      11 +  return Math.round(weight * (1 - subScore) * 100)             
+      12 +}                                                              
+      13 +                                                               
+      14 +// The server sends e.g. "Dangerous wind: gusts 95 km/h"; it re
+         +ads after "Unsafe: ".                                          
+      15 +function lowerFirst(text: string): string {                    
+      16 +  return text.charAt(0).toLowerCase() + text.slice(1)          
+      17 +}                                                              
+      18 +                                                               
+      19 +function DayRow({ day, isBest }: Props) {                      
+      20 +  return (                                                     
+      21 +    <li className={isBest ? 'day best' : 'day'}>               
+      22 +      <div className="day-summary">                            
+      23 +        <span className="day-date">{formatDate(day.date)}</span
+         +>                                                              
+      24 +        {day.missingData ? (                                   
+      25 +          <span className="day-note" title={day.missingData}>  
+      26 +            No forecast data                                   
+      27 +          </span>                                              
+      28 +        ) : day.gate ? (                                       
+      29 +          <span className="day-note unsafe">Unsafe: {lowerFirst
+         +(day.gate)}</span>                                             
+      30 +        ) : (                                                  
+      31 +          <span className="day-score">                         
+      32 +            {Math.round(day.score ?? 0)}                       
+      33 +            {day.penalty && <span className="day-penalty"> {day
+         +.penalty}</span>}                                              
+      34 +          </span>                                              
+      35 +        )}                                                     
+      36 +        {isBest && <span className="badge">Best day</span>}    
+      37 +      </div>                                                   
+      38 +      {!day.gate && day.factors.length > 0 && (                
+      39 +        <details>                                              
+      40 +          <summary>Why this score</summary>                    
+     … 19 more lines (ctrl+o to expand)
+  ⎿  … 5 more files changed
+
+⏺ Build and lint pass. Now checking against the live server: the response shape,
+  the error code coming through, and the date formatter in a negative-offset
+  timezone.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ The forecast view is in. Build and lint pass, and I checked it against the
+  live server for Lisbon (all 7 days come back with factors), but I haven't
+  clicked through it in a browser.
+
+  What I checked:
+  - Dates: in a Los Angeles timezone, new Date("2026-10-17") shows Fri 16 Oct.
+    The new formatter shows Sat 17 Oct there and in Auckland.
+  - Error code: bad coordinates come back with extensions.code:
+    "BAD_USER_INPUT", so the code reaches the client. I didn't force a real
+    FORECAST_UNAVAILABLE, so the retry path is untested.
+  - Points lost: they match the scores. Lisbon on Oct 22 scores 70.9 and loses
+    26 points to "1.5 mm over 6 h" of rain, which is the trace-rain issue
+    already in your Cut list.
+
+  What's new:
+  - graphql.ts (web/src/api/graphql.ts) now throws a GraphQLRequestError that
+    carries code.
+  - useActivityForecast.ts (web/src/hooks/useActivityForecast.ts) handles
+    loading, done, unavailable (with retry) and generic error. Like the search,
+    a stale response can't overwrite a newer one.
+  - date.ts (web/src/format/date.ts) splits the string and formats it as UTC
+    (e.g. "Sat 17 Oct").
+  - ForecastView.tsx (web/src/components/ForecastView.tsx), ActivitySection.tsx
+    (web/src/components/ActivitySection.tsx) and DayRow.tsx
+    (web/src/components/DayRow.tsx) render the result.
+
+  Choices you didn't ask for:
+  1. Scores are rounded to whole numbers. The server sends one decimal (89.7
+     shows as 90), which matches the rounded points.
+  2. Gated days have no factors to expand. A gated day scores 0 but its factors
+     would only show small losses, which doesn't explain the 0. The gate reason
+     explains it.
+  3. The gate text's first letter is lowercased so it reads "Unsafe: dangerous
+     wind: gusts 95 km/h", as in your example. The server sends "Dangerous
+     wind…".
+  4. The full missing-data reason is in a hover tooltip. The day shows "No
+     forecast data"; hovering shows which fields are missing.
+  5. Retry only appears on FORECAST_UNAVAILABLE. Other errors get "Something
+     went wrong loading the forecast." with no button.
+  6. Best day is shown twice. There's a "Best day: …" line above the list, plus
+     a highlighted row with a "Best day" badge.
+  7. Ties show two 100s with the badge on the earlier one. Lisbon has 99.7 on
+     both Oct 19 and Oct 21, both round to 100, and the server picks the
+     earliest. It looks slightly odd.
+  8. Dates use the en-GB format ("Sat 17 Oct") instead of the browser's locale,
+     to match the English UI.
+  9. Factors show as Rain: 1.5 mm over 6 h   −26 pts (a 0 shows as "−0 pts"),
+     under a "Why this score" toggle.
+  10. Back keeps the search. "← Search another place" returns to the search with
+      the previous results still listed and the input filled in. To do that,
+      SearchBox gained an initialValue prop.
+  11. Non-applicable fallback text. If an activity isn't applicable and has no
+      reason, it shows "Not available for this place."
+  12. Basic CSS: a centred column, green highlight for the best day and red text
+      for unsafe days.
+
+❯ <ide_selection>The user selected the lines 14 to 14 from /Users/andre-grigait
+  is/Projects/collinson-exercise/web/src/components/DayRow.tsx:
+  Unsafe
+
+  This may or may not be related to the current task.</ide_selection>
+
+❯ Remove the day-note: Unsafe, not all gates mean unsafety, it's just the
+  reason...
+
+  Read 1 file (ctrl+o to expand)
+
+⏺ Bash(python3 - <<'EOF'
+      p='src/components/DayRow.tsx'; s=open(p).read()…)
+  ⎿  Updated web/src/components/DayRow.tsx (+1 -6)
+      11    return Math.round(weight * (1 - subScore) * 100)
+      12  }
+      13  
+      14 -// The server sends e.g. "Dangerous wind: gusts 95 km/h"; it re
+         -ads after "Unsafe: ".                                          
+      15 -function lowerFirst(text: string): string {                    
+      16 -  return text.charAt(0).toLowerCase() + text.slice(1)          
+      17 -}                                                              
+      18 -                                                               
+      14  function DayRow({ day, isBest }: Props) {
+      15    return (
+      16      <li className={isBest ? 'day best' : 'day'}>
+     ...
+      21              No forecast data
+      22            </span>
+      23          ) : day.gate ? (
+      29 -          <span className="day-note unsafe">Unsafe: {lowerFirst
+         -(day.gate)}</span>                                             
+      24 +          <span className="day-note gated">{day.gate}</span>   
+      25          ) : (
+      26            <span className="day-score">
+      27              {Math.round(day.score ?? 0)}
+  ⎿  Updated web/src/index.css (+1 -1)
+      50    opacity: 0.8;
+      51  }
+      52  
+      53 -.day-note.unsafe {                                             
+      53 +.day-note.gated {                                              
+      54    color: #c62828;
+      55    opacity: 1;
+      56  }
+
+⏺ Gated days now show the server's reason as-is, e.g. "Dangerous wind: gusts 95
+  km/h", with no "Unsafe:" prefix. Build and lint pass.
+
+  In DayRow.tsx (web/src/components/DayRow.tsx) I removed the lowerFirst helper
+  too, since it only existed to make the text read after the prefix. The CSS
+  class went from unsafe to gated, and the reason keeps the red text.
+
+  The same "unsafe" wording is still in two places outside the web app: the gate
+  comment in types.ts (server/src/domain/types.ts) says "Why the day is
+  unsafe", and DECISIONS.md says "Gates are for safety". Update those if you
+  want the wording consistent.
+
+❯ <ide_opened_file>The user opened the file /Users/andre-grigaitis/Projects/col
+  linson-exercise/web/src/components/DayRow.tsx in the IDE. This may or may not
+  be related to the current task.</ide_opened_file>
+
+❯ In gated days, show the conditions, it can be without the score... The
+  conditions are useful.
+
+  Read 1 file (ctrl+o to expand)
+
+⏺ Update(web/src/components/DayRow.tsx)
+  ⎿  Added 8 lines, removed 5 lines
+      30          )}
+      31          {isBest && <span className="badge">Best day</span>}
+      32        </div>
+      33 -      {!day.gate && day.factors.length > 0 && (                
+      33 +      {day.factors.length > 0 && (                             
+      34          <details>
+      35 -          <summary>Why this score</summary>                    
+      35 +          {/* A gate overrides the weighted sum, so points lost
+         + wouldn't explain the day. */}                                 
+      36 +          <summary>{day.gate ? 'Conditions' : 'Why this score'}
+         +</summary>                                                     
+      37            <ul className="factors">
+      38              {day.factors.map((factor) => (
+      39                <li key={factor.name}>
+      40                  <span>
+      41                    {factor.name}: {factor.detail}
+      42                  </span>
+      42 -                <span className="points">                      
+      43 -                  −{pointsLost(factor.weight, factor.subScore)}
+         - pts                                                           
+      44 -                </span>                                        
+      43 +                {!day.gate && (                                
+      44 +                  <span className="points">                    
+      45 +                    −{pointsLost(factor.weight, factor.subScore
+         +)} pts                                                         
+      46 +                  </span>                                      
+      47 +                )}                                             
+      48                </li>
+      49              ))}
+      50            </ul>
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ Gated days now have an expandable "Conditions" section listing each factor's
+  detail, such as "Wind: gusts 95 km/h", with no points. Build and lint pass.
+
+  Points stay hidden because the gate replaces the weighted sum, so "−3 pts"
+  next to a day that scores 0 would be misleading. Days that aren't gated still
+  show "Why this score" with points lost. The change is in DayRow.tsx
+  (web/src/components/DayRow.tsx).
+
+❯ Ok, in the points, factors that do not cost anything can have its value
+  replaced from "-0pts" to "-".
+
+⏺ Update(web/src/components/DayRow.tsx)
+  ⎿  Added 1 line, removed 1 line
+      42                  </span>
+      43                  {!day.gate && (
+      44                    <span className="points">
+      45 -                    −{pointsLost(factor.weight, factor.subScore
+         -)} pts                                                         
+      45 +                    {formatPointsLost(pointsLost(factor.weight,
+         + factor.subScore))}                                            
+      46                    </span>
+      47                  )}
+      48                </li>
+
+⏺ Update(web/src/components/DayRow.tsx)
+  ⎿  Added 4 lines
+      11    return Math.round(weight * (1 - subScore) * 100)
+      12  }
+      13  
+      14 +function formatPointsLost(points: number): string {            
+      15 +  return points === 0 ? '-' : `−${points} pts`                 
+      16 +}                                                              
+      17 +                                                               
+      18  function DayRow({ day, isBest }: Props) {
+      19    return (
+      20      <li className={isBest ? 'day best' : 'day'}>
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ Factors that cost nothing now show "-" instead of "−0 pts". Build and lint
+  pass.
+
+  The check is on the rounded value, so a factor that costs under half a point
+  also shows "-". The change is a small formatPointsLost helper in DayRow.tsx
+  (web/src/components/DayRow.tsx).
+
+❯ <ide_opened_file>The user opened the file /Users/andre-grigaitis/Projects/col
+  linson-exercise/server/src/scoring/outdoor/OutdoorScorer.ts in the IDE. This
+  may or may not be related to the current task.</ide_opened_file>
+
+❯ Ok, generate a commit message for the staged changes, tests are positive!
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ Here's a message for the staged changes. It also covers your "unsafe" →
+  "unfeasible" wording edits on the server side:
+
+  Add forecast view to the web app
+  - Picking a place calls activityForecast(latitude, longitude); a back
+    button returns to the search with the previous results and input kept
+  - States: loading, FORECAST_UNAVAILABLE ("The weather service is
+    unavailable, try again" + retry), and a generic error for anything else
+  - graphql.ts passes extensions.code through as GraphQLRequestError.code
+  - One section per activity; a non-applicable activity shows its reason
+  - Best day highlighted, or "No good day this week" when bestDate is null
+  - Days in date order with weekday, date and rounded score; gated days
+    show the gate reason, missing-data days "No forecast data", penalties
+    next to the score
+  - Expandable factors per day with points lost, weight × (1 − subScore)
+    × 100 rounded ("-" when nothing is lost); gated days list conditions
+    without points
+  - YYYY-MM-DD dates formatted in UTC so they don't shift to the previous
+    day west of UTC
+  - Gates described as "unfeasible" rather than "unsafe" in server
+    comments and DECISIONS.md; Prettier reformat in OutdoorScorer
+  - DECISIONS.md: points lost instead of raw sub-scores, date handling
+
+  Your last commit (36f89dd) ended up with the whole message on one line,
+  because the line breaks were lost when it was passed to git commit -m. To
+  avoid that, save the message to a file and run git commit -F <file>, or run
+  plain git commit and paste it into the editor.
+
+  To fix 36f89dd, use git commit --amend if it hasn't been pushed; if it has,
+  the fix needs a force-push. Commit this one first, though: amending now would
+  also pull the staged changes into that commit.
