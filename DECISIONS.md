@@ -131,3 +131,9 @@ will be in `server/src/scoring/`. The full back-and-forth is in
 
 - **Daytime-only aggregation.** Daily values include the night, so night rain
   counts against the day. Fix: hourly data aggregated over ~09:00–18:00.
+
+- **Trace precipitation is over-penalised.** `precipitation_hours` seems to count
+  an hour even for trace amounts (Chamonix: 0.13 mm over 2 h). So 0.9 mm over 9 h
+  in Lisbon scores rain ≈ 0.09, and a Chamonix day with 88% sunshine and 1.1 mm
+  over 6 h loses ~26 points. Idea: scale the hours penalty by the amount (full
+  from ~2 mm/day). Left for fine-tuning.
