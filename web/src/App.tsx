@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { Location } from './api/searchLocations.ts'
+import ForecastView from './components/ForecastView.tsx'
 import LocationResults from './components/LocationResults.tsx'
 import SearchBox from './components/SearchBox.tsx'
 import { useLocationSearch, type SearchRequest } from './hooks/useLocationSearch.ts'
@@ -9,22 +10,19 @@ function App() {
   const [selected, setSelected] = useState<Location | null>(null)
   const search = useLocationSearch(request)
 
-  function handleSearch(name: string) {
-    setRequest({ name })
-    setSelected(null)
-  }
-
   return (
     <main>
       <h1>Activity forecast</h1>
-      <SearchBox onSearch={handleSearch} />
       {selected ? (
-        <p>
-          Selected: {selected.name}
-          {selected.country && `, ${selected.country}`}
-        </p>
+        <ForecastView location={selected} onBack={() => setSelected(null)} />
       ) : (
-        <LocationResults state={search} onPick={setSelected} />
+        <>
+          <SearchBox
+            initialValue={request?.name}
+            onSearch={(name) => setRequest({ name })}
+          />
+          <LocationResults state={search} onPick={setSelected} />
+        </>
       )}
     </main>
   )

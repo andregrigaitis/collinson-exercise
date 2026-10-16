@@ -21,7 +21,7 @@ export interface OutdoorConfig {
     /** sunshine / daylight ratio → sub-score */
     sunshine: Curve;
   };
-  /** Any of these makes the day unsafe: score 0. All inclusive (≥ / ≤). */
+  /** Any of these makes the day unfeasible: score 0. All inclusive (≥ / ≤). */
   gates: {
     /** km/h, NWS "High" sustained wind */
     sustainedWind: number;

@@ -37,7 +37,7 @@ Known limitation: a coastal town a few km inland may land in a land grid cell an
 ### Outdoor sightseeing
 
 Weighted sum of four sub-scores (rain 40%, temperature 30%, wind 15%,
-sunshine 15%), plus hard gates for unsafe days. Exact curves and thresholds
+sunshine 15%), plus hard gates for unfeasible days. Exact curves and thresholds
 are in `server/src/scoring/`. The full back-and-forth is in
 `ai-sessions/outdoor-scoring.txt`.
 
@@ -132,6 +132,14 @@ are in `server/src/scoring/`. The full back-and-forth is in
 - **CORS left at Yoga's default (open).** No auth, cookies or mutations, so
   an open policy exposes nothing. The real exposure is the server being used
   as a free Open-Meteo proxy, which needs rate limiting or caching, not CORS.
+
+- **UI shows points lost per factor, not raw sub-scores.** "Rain: 1.5 mm over
+  6 h (−26 pts)" answers "why is this day low?"; 0.35 doesn't. On gated days
+  the factors are listed without points, since they don't add up to the 0;
+  the gate reason explains it.
+
+- **Dates formatted without timezone conversion.** The API sends the place's
+  local date; `new Date("YYYY-MM-DD")` would show the previous day west of UTC.
 
 ## Cut / not done (and why)
 

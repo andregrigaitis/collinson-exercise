@@ -2,7 +2,18 @@ const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/graphql'
 
 type GraphQLResponse<T> = {
   data?: T
-  errors?: { message: string }[]
+  errors?: { message: string; extensions?: { code?: string } }[]
+}
+
+/** A failed request. `code` is the GraphQL `extensions.code`, if the server sent one. */
+export class GraphQLRequestError extends Error {
+  readonly code?: string
+
+  constructor(message: string, code?: string) {
+    super(message)
+    this.name = 'GraphQLRequestError'
+    this.code = code
+  }
 }
 
 export async function graphql<T>(
@@ -18,7 +29,11 @@ export async function graphql<T>(
   })
   const body = (await response.json()) as GraphQLResponse<T>
   if (body.errors?.length || !body.data) {
-    throw new Error(body.errors?.[0]?.message ?? `Request failed: ${response.status}`)
+    const error = body.errors?.[0]
+    throw new GraphQLRequestError(
+      error?.message ?? `Request failed: ${response.status}`,
+      error?.extensions?.code,
+    )
   }
   return body.data
 }

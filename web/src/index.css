@@ -7,3 +7,66 @@
 body {
   margin: 0;
 }
+
+main {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.days,
+.factors {
+  list-style: none;
+  padding: 0;
+}
+
+.day {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+}
+
+.day.best {
+  background: color-mix(in srgb, green 15%, transparent);
+  border-radius: 0.25rem;
+}
+
+.day-summary {
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+}
+
+.day-date {
+  min-width: 6rem;
+}
+
+.day-score {
+  font-weight: bold;
+}
+
+.day-penalty,
+.day-note {
+  font-weight: normal;
+  opacity: 0.8;
+}
+
+.day-note.gated {
+  color: #c62828;
+  opacity: 1;
+}
+
+.badge {
+  margin-left: auto;
+  font-size: 0.85em;
+  font-weight: bold;
+}
+
+.factors li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.points {
+  white-space: nowrap;
+}

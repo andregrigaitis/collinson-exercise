@@ -1,11 +1,12 @@
 import { useState, type FormEvent } from 'react'
 
 type Props = {
+  initialValue?: string
   onSearch: (name: string) => void
 }
 
-function SearchBox({ onSearch }: Props) {
-  const [value, setValue] = useState('')
+function SearchBox({ initialValue = '', onSearch }: Props) {
+  const [value, setValue] = useState(initialValue)
   const name = value.trim()
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {

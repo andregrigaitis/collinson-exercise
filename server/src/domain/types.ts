@@ -48,7 +48,7 @@ export interface DayScore {
   score: number | null;
   /** Empty when the day can't be scored. */
   factors: ScoreFactor[];
-  /** Why the day is unsafe, e.g. "Dangerous wind: gusts 95 km/h" */
+  /** Why the day is unfeasible, e.g. "Dangerous wind: gusts 95 km/h" */
   gate?: string;
   /** e.g. "Thunderstorm ×0.75" */
   penalty?: string;

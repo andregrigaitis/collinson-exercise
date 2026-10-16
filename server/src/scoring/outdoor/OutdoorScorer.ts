@@ -70,7 +70,9 @@ export class OutdoorScorer implements ActivityScorer {
 
     // Polar night: no daylight means no sunshine signal, so use the floor.
     const sunshineRatio =
-      day.daylightDuration > 0 ? day.sunshineDuration / day.daylightDuration : 0;
+      day.daylightDuration > 0
+        ? day.sunshineDuration / day.daylightDuration
+        : 0;
 
     return [
       {
@@ -100,7 +102,7 @@ export class OutdoorScorer implements ActivityScorer {
     ];
   }
 
-  /** First unsafe condition found, most dangerous first. */
+  /** First unfeasible condition found, most dangerous first. */
   private gate(day: CompleteDay): string | undefined {
     const { gates } = this.config;
 
