@@ -13,7 +13,7 @@ scored the way it did.
 | Outdoor sightseeing | Done: server scoring, tests, and UI           |
 | Skiing              | Not started (approach decided, see DECISIONS) |
 | Surfing             | Not started (approach decided, see DECISIONS) |
-| Indoor sightseeing  | Not started                                   |
+| Indoor sightseeing  | Done: server scoring, tests, and UI           |
 
 Location search, the forecast view, and loading, no-results and
 service-unavailable states work in the UI.

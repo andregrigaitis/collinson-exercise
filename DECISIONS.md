@@ -97,6 +97,32 @@ are in `server/src/scoring/`. The full back-and-forth is in
   null code makes the day unscorable rather than silently skipping the
   penalty.
 
+### Indoor sightseeing
+
+Built on top of the outdoor result, with no weather logic of its own.
+Exact numbers are in `server/src/scoring/indoor/config.ts`.
+
+- **Baseline plus a bonus for bad weather outside:**
+  indoor = 60 + 40 × (1 − outdoor/100). A perfect outdoor day still gives 60
+  (museums are fine, just not the best option); the worse it is outside, the
+  closer indoor gets to 100. Shown in the UI as one factor, "Weather outside",
+  so 100 minus points lost still equals the score.
+
+- **Outdoor washout, heat and cold count as outdoor 0, so indoor scores 100.**
+  Those are the best museum days. Side effect: a day that's ruled out outdoors
+  can become indoor's best date, which is intended.
+
+- **Dangerous wind gates indoor too.** Getting there is the problem: gusts at
+  NWS "Extreme" levels bring down trees. Extreme heat or cold isn't gated,
+  since a short trip to a museum is manageable in both; strong wind isn't.
+  A wind-gated indoor day shows only the gate reason, no factors.
+
+- **Missing outdoor data falls back to the baseline (60).** Museums don't depend
+  on the forecast; only the bonus is unknown, so the day still gets a score.
+
+- **No thunderstorm penalty for indoor.** A storm already lowers the outdoor
+  score, which raises indoor.
+
 ## Technical decisions
 
 - **Two independent npm packages (`server/`, `web/`), no monorepo tooling.**
@@ -143,6 +169,11 @@ are in `server/src/scoring/`. The full back-and-forth is in
 
 - **Dates formatted without timezone conversion.** The API sends the place's
   local date; `new Date("YYYY-MM-DD")` would show the previous day west of UTC.
+
+- **OutdoorScorer exposes the gate kind, not just a message.** The indoor scorer
+  needs to tell wind apart from heat, cold and washout. Parsing the message text
+  would break on the first wording change, so `assess()` returns the outdoor
+  score plus the gate kind; `scoreDay()` is unchanged.
 
 ## Cut / not done (and why)
 

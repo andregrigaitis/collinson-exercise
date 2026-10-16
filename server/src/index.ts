@@ -3,6 +3,7 @@ import { GraphQLError } from "graphql";
 import { createSchema, createYoga } from "graphql-yoga";
 import { OpenMeteoForecastProvider } from "./providers/open-meteo/OpenMeteoForecastProvider.js";
 import { OpenMeteoGeocodingProvider } from "./providers/open-meteo/OpenMeteoGeocodingProvider.js";
+import { IndoorScorer } from "./scoring/indoor/IndoorScorer.js";
 import { OutdoorScorer } from "./scoring/outdoor/OutdoorScorer.js";
 import {
   ForecastService,
@@ -11,7 +12,11 @@ import {
 
 const geocoding = new OpenMeteoGeocodingProvider();
 const forecast = new OpenMeteoForecastProvider();
-const forecastService = new ForecastService(forecast, [new OutdoorScorer()]);
+const outdoorScorer = new OutdoorScorer();
+const forecastService = new ForecastService(forecast, [
+  outdoorScorer,
+  new IndoorScorer(outdoorScorer),
+]);
 
 type Coordinates = { latitude: number; longitude: number };
 
