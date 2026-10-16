@@ -63,16 +63,17 @@ The main ones. The reasoning for each is in [DECISIONS.md](DECISIONS.md).
 
 - A search returns up to 3 matches and the user picks one (q2).
 - Skiing will be scored at the city's elevation, not at resort altitude, so valley towns near resorts will score low (q3). Not built yet.
-- Surfing will be "not applicable" when the Marine API returns all nulls, which is what it does inland (q4).
+- Surfing is "not applicable" when the Marine API returns all nulls (inland), or when the Marine API is down (q4).
+- Surfing is scored for a beginner: ideal swell 0.6–1 m, too big at 2 m (q5).
 - Daily data covers the full day, including the night, so night rain counts against the day (Cut / not done).
 - Daily `weather_code` and `precipitation_probability_max` aren't used as scores, because they describe the worst hour of the day (Scoring decisions).
 - A day with missing forecast data is shown as "can't score", not as 0 (Outdoor sightseeing).
-- (dangerous wind, extreme heat or cold, washout) make a day unfeasible (score 0). The heat gate was calibrated on Miami data and isn't a standard (Outdoor sightseeing).
+- Gates make a day unfeasible (score 0): dangerous wind, extreme heat or cold and washout for outdoor; flat, too big and too windy for surfing. The outdoor heat gate was calibrated on Miami data and isn't a standard (Scoring decisions).
 
 ## How I worked
 
 - [DECISIONS.md](DECISIONS.md): open questions with the assumption I took, scoring and technical decisions, and what I cut and why.
-- [ai-sessions/](ai-sessions/): raw AI sessions (front-end coding, scoring, the ski altitude question), exported unedited, with the exception of a short summary at the top.
+- [ai-sessions/](ai-sessions/): raw AI sessions (ski altitude, outdoor scoring, surf scoring, front-end coding), exported unedited except for a short summary at the top.
 - The commit history.
 - I also used a separate chat for domain research and for sanity-checking numbers.
 
@@ -81,9 +82,9 @@ The main ones. The reasoning for each is in [DECISIONS.md](DECISIONS.md).
 ```
 server/                 GraphQL API (Node.js, GraphQL Yoga, TypeScript run with tsx)
   src/index.ts          Schema and resolvers
-  src/providers/        Open-Meteo clients, mapped to our own domain types
+  src/providers/        Open-Meteo clients (geocoding, forecast, marine), mapped to our own domain types
   src/services/         ForecastService: fetch once, run each activity scorer
-  src/scoring/          Scorers and their config (outdoor/ only so far)
+  src/scoring/          One folder per activity (outdoor/, indoor/, surf/) with its scorer, config and tests
 web/                    React + TypeScript front end (Vite)
   src/api/              GraphQL requests (plain fetch, no client library)
   src/hooks/            Search and forecast state: loading, error, retry
