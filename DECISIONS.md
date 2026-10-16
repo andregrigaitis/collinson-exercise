@@ -41,9 +41,12 @@ sunshine 15%), plus hard gates for unfeasible days. Exact curves and thresholds
 are in `server/src/scoring/`. The full back-and-forth is in
 `ai-sessions/outdoor-scoring.txt`.
 
-- **Gates are for safety, curves are for comfort.** Every sub-score reaches 0
-  exactly where its gate starts, so there's no range where conditions get
-  worse but the score doesn't move.
+- **Gates are for unfeasible days, curves are for comfort.** For single-variable
+  gates (temperature, gusts, rain hours), the sub-score reaches 0 exactly where
+  the gate starts, so there's no range where conditions get worse but the score
+  doesn't move. Two exceptions: the heavy-rain gate combines amount and duration,
+  so no single curve point can match it; and sustained wind only has a gate,
+  since gusts already drive the wind comfort score.
 
 - **Feels-like max temperature.** Includes humidity and wind chill, and the
   max is the daytime value. Side effect: a cold windy day is penalised twice.
@@ -124,9 +127,9 @@ are in `server/src/scoring/`. The full back-and-forth is in
 
 - **5s timeout on Open-Meteo calls**, so a slow upstream doesn't hang the request.
 
-- **Error handling.** Provider failures become a `FORECAST_UNAVAILABLE` error
+- **Error handling.** Forecast provider failures become a `FORECAST_UNAVAILABLE` error
   with a safe "try again" message; the real cause is only logged on the
-  server. Bad coordinates return `BAD_USER_INPUT`. Any other error stays
+  server. Search failures show a generic error in the UI. Bad coordinates return `BAD_USER_INPUT`. Any other error stays
   masked by Yoga as "Unexpected error."
 
 - **CORS left at Yoga's default (open).** No auth, cookies or mutations, so
@@ -151,7 +154,7 @@ are in `server/src/scoring/`. The full back-and-forth is in
   ski score heavily and would need its own tuning and justification.
 
 - **Live ski data can't show a good ski day right now** (mid-October, northern
-  hemisphere season hasn't started). Ski scoring is checked with fixed
+  hemisphere season hasn't started). Ski scoring will be checked with fixed
   test data instead of the live API.
 
 - **Weighted geometric mean for outdoor.** With a weighted sum, a dry, sunny,
