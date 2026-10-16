@@ -129,6 +129,10 @@ are in `server/src/scoring/`. The full back-and-forth is in
   server. Bad coordinates return `BAD_USER_INPUT`. Any other error stays
   masked by Yoga as "Unexpected error."
 
+- **CORS left at Yoga's default (open).** No auth, cookies or mutations, so
+  an open policy exposes nothing. The real exposure is the server being used
+  as a free Open-Meteo proxy, which needs rate limiting or caching, not CORS.
+
 ## Cut / not done (and why)
 
 - **Scoring skiing at resort altitude.** See q3. Next step would be sampling a
