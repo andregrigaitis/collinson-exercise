@@ -31,3 +31,27 @@ export interface DailyWeather {
   /** WMO code, worst condition of the day */
   weatherCode: number | null;
 }
+
+export interface ScoreFactor {
+  name: string;
+  /** 0–1, unrounded */
+  subScore: number;
+  /** Share of the weighted sum, e.g. 0.4 */
+  weight: number;
+  /** Short explanation for the UI, e.g. "29.6 °C feels-like" */
+  detail: string;
+}
+
+export interface DayScore {
+  date: string;
+  /** 0–100, one decimal. 0 when gated, null when it can't be scored. */
+  score: number | null;
+  /** Empty when the day can't be scored. */
+  factors: ScoreFactor[];
+  /** Why the day is unsafe, e.g. "Dangerous wind: gusts 95 km/h" */
+  gate?: string;
+  /** e.g. "Thunderstorm ×0.75" */
+  penalty?: string;
+  /** Why the day can't be scored, e.g. "Missing forecast data: sunshine duration" */
+  missingData?: string;
+}

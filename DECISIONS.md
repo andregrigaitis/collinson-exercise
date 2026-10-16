@@ -38,7 +38,7 @@ Known limitation: a coastal town a few km inland may land in a land grid cell an
 
 Weighted sum of four sub-scores (rain 40%, temperature 30%, wind 15%,
 sunshine 15%), plus hard gates for unsafe days. Exact curves and thresholds
-will be in `server/src/scoring/`. The full back-and-forth is in
+are in in `server/src/scoring/`. The full back-and-forth is in
 `ai-sessions/outdoor-scoring.txt`.
 
 - **Gates are for safety, curves are for comfort.** Every sub-score reaches 0
@@ -79,6 +79,20 @@ will be in `server/src/scoring/`. The full back-and-forth is in
 
 - **Sunshine as a ratio of daylight, with a 0.3 floor.** Short winter days
   aren't punished for being short, and overcast but dry is still fine.
+
+- **Missing data means "can't score", not 0.** If any field the formula
+  needs is null, the day gets score null and a "Missing forecast data"
+  reason. A null scored as 0 would look like a terrible day instead of an
+  unknown one.
+
+- **Missing-data check runs before the gates.** Side effect: a day with
+  dangerous gusts but a null precipitation value comes back as "can't
+  score", not as a wind gate. Kept for now because it's one simple rule;
+  checking each gate whenever its own fields are present would fix it.
+
+- **`weather_code` is required.** The thunderstorm penalty needs it, so a
+  null code makes the day unscorable rather than silently skipping the
+  penalty.
 
 ## Technical decisions
 
@@ -137,3 +151,7 @@ will be in `server/src/scoring/`. The full back-and-forth is in
   in Lisbon scores rain ≈ 0.09, and a Chamonix day with 88% sunshine and 1.1 mm
   over 6 h loses ~26 points. Idea: scale the hours penalty by the amount (full
   from ~2 mm/day). Left for fine-tuning.
+
+- **Extreme rain in a short time isn't gated.** 88 mm in 3 h in Miami scores
+  21.7 instead of being a washout, because the heavy-rain gate needs 4+ hours.
+  Idea: gate on amount alone above ~50 mm.
